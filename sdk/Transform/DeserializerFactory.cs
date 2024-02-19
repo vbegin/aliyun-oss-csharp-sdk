@@ -227,6 +227,71 @@ namespace Aliyun.OSS.Transform
         {
             return new DeleteObjectResultDeserializer(CreateContentDeserializer<Stream>());
         }
+
+        public IDeserializer<ServiceResponse, CreateLiveChannelResult> CreateCreateLiveChannelResultDeserializer()
+        {
+            return new CreateLiveChannelResultDeserializer(CreateContentDeserializer<CreateLiveChannelResultModel>());
+        }
+
+        public IDeserializer<ServiceResponse, GetLiveChannelInfoResult> CreateGetLiveChannelInfoResultDeserializer()
+        {
+            return new GetLiveChannelInfoResultDeserializer(CreateContentDeserializer<LiveChannelConfiguration>());
+        }
+
+        public IDeserializer<ServiceResponse, GetLiveChannelStatResult> CreateGetLiveChannelStatResultDeserializer()
+        {
+            return new GetLiveChannelStatResultDeserializer(CreateContentDeserializer<LiveChannelStat>());
+        }
+
+        public IDeserializer<ServiceResponse, GetLiveChannelHistoryResult> CreateGetLiveChannelHistoryResultDeserializer()
+        {
+            return new GetLiveChannelHistoryResultDeserializer(CreateContentDeserializer<LiveChannelHistory>());
+        }
+
+        public IDeserializer<ServiceResponse, ListLiveChannelResult> CreateListLiveChannelResultDeserializer()
+        {
+            return new ListLiveChannelResultDeserializer(CreateContentDeserializer<ListLiveChannelResultModel>());
+        }
+
+        public IDeserializer<ServiceResponse, GetVodPlaylistResult> CreateGetVodPlaylistResultDeserializer()
+        {
+            return new GetVodPlaylistResultDeserializer(CreateContentDeserializer<GetVodPlaylistResult>());
+        }
+
+        public IDeserializer<ServiceResponse, GetBucketInventoryConfigurationResult> CreateGetBucketInventoryConfigurationResultDeserializer()
+        {
+            return new GetBucketInventoryConfigurationResultDeserializer(CreateContentDeserializer<InventoryConfigurationModel>());
+        }
+
+        public IDeserializer<ServiceResponse, ListBucketInventoryConfigurationResult> CreateListBucketInventoryConfigurationResultDeserializer()
+        {
+            return new ListBucketInventoryConfigurationResultDeserializer(CreateContentDeserializer<ListInventoryConfigurationModel>());
+        }
+
+        public IDeserializer<ServiceResponse, InitiateBucketWormResult> CreateInitiateBucketWormResultDeserializer()
+        {
+            return new InitiateBucketWormResultDeserializer(CreateContentDeserializer<Stream>());
+        }
+
+        public IDeserializer<ServiceResponse, GetBucketWormResult> CreateGetBucketWormResultDeserializer()
+        {
+            return new GetBucketWormResultDeserializer(CreateContentDeserializer<WormConfigurationModel>());
+        }
+
+        public IDeserializer<ServiceResponse, OssObject> CreateSelectObjectRequestDeserializer(SelectObjectRequest request)
+        {
+            return new SelectObjectRequestDeserializer(request);
+        }
+
+        public IDeserializer<ServiceResponse, CreateSelectObjectMetaResult> CreateSelectObjectMetaRequestDeserializer()
+        {
+            return new SelectObjectMetaRequestDeserializer();
+        }
+
+        public IDeserializer<ServiceResponse, ProcessObjectResult> CreateProcessObjectResultDeserializer()
+        {
+            return new ProcessObjectResultDeserializer(CreateContentDeserializer<Stream>());
+        }
     }
 
     internal class XmlDeserializerFactory : DeserializerFactory

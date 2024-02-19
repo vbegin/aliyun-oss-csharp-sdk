@@ -1,4 +1,23 @@
 ﻿# ChangeLog - Aliyun OSS SDK for C# 
+## 版本号：2.13.0  日期：2021/02/07
+### 变更内容
+- 增加：process object 接口, 支持图片持久化功能
+
+## 版本号：2.12.0  日期：2020/09/29
+### 变更内容
+- 增加：select object 接口
+- 增加：bucket worm 接口
+- 修复: BeginPutObject 接口存在未自动视频content-type 的问题
+
+## 版本号：2.11.0  日期：2020/07/30
+### 变更内容
+- 增加：Live Channel  接口
+- 增加：Bucket Inventory 接口
+- 增加：冷归档 接口
+- 增加：按照key删除 Bucket 标签
+- 增加：上传回调 和 访问者付费 子资源到签名列表里 
+- 修复: 当CheckPointDir 为空时，仍然生成checkpoint文件的问题
+
 ## 版本号：2.10.0  日期：2020/04/10
 ### 变更内容
 - 增加：Bucket Policy 接口

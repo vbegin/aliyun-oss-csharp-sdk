@@ -11,7 +11,7 @@ using Aliyun.OSS.Common.Authentication;
 using Aliyun.OSS.Common.Internal;
 using Aliyun.OSS.Model;
 
-namespace Aliyun.OSS 
+namespace Aliyun.OSS
 {
     /// <summary>
     /// The Object Storage Service (OSS) entry point interface.
@@ -169,7 +169,7 @@ namespace Aliyun.OSS
         /// <param name="bucketName"><see cref="Bucket" /> name</param>
         /// <returns>The logging config result</returns>
         BucketLoggingResult GetBucketLogging(string bucketName);
-        
+
         /// <summary>
         /// Deletes the <see cref="Bucket" /> logging config
         /// </summary>
@@ -181,7 +181,7 @@ namespace Aliyun.OSS
         /// </summary>
         /// <param name="setBucketWebSiteRequest"><see cref="SetBucketWebsiteRequest"/> instance</param>
         void SetBucketWebsite(SetBucketWebsiteRequest setBucketWebSiteRequest);
-        
+
 
         /// <summary>
         /// Gets <see cref="Bucket" /> static website config
@@ -285,6 +285,12 @@ namespace Aliyun.OSS
         void DeleteBucketTagging(string bucketName);
 
         /// <summary>
+        /// Deletes the bucket's tagging.
+        /// </summary>
+        /// <param name="deleteBucketTaggingRequest">DeleteBucketTaggingRequest.</param>
+        void DeleteBucketTagging(DeleteBucketTaggingRequest deleteBucketTaggingRequest);
+
+        /// <summary>
         /// Gets <see cref="Bucket" /> bucket tagging
         /// </summary>
         /// <param name="bucketName"><see cref="Bucket" /> name</param>
@@ -336,6 +342,63 @@ namespace Aliyun.OSS
         /// <returns><see cref="GetBucketVersioningResult"/> instance</returns>
         GetBucketVersioningResult GetBucketVersioning(string bucketName);
 
+        /// <summary>
+        /// Sets <see cref="Bucket" /> bucket inventory configuration
+        /// </summary>
+        /// <param name="request"><see cref="SetBucketInventoryConfigurationRequest"/> instance</param>
+        void SetBucketInventoryConfiguration(SetBucketInventoryConfigurationRequest request);
+
+        /// <summary>
+        /// Deletes <see cref="Bucket" /> bucket inventory configuration
+        /// </summary>
+        /// <param name="request"><see cref="DeleteBucketInventoryConfigurationRequest"/> instance</param>
+        void DeleteBucketInventoryConfiguration(DeleteBucketInventoryConfigurationRequest request);
+
+        /// <summary>
+        /// Gets <see cref="Bucket" /> bucket inventory configuration
+        /// </summary>
+        /// <param name="request"><see cref="GetBucketInventoryConfigurationRequest"/> instance</param>
+        /// <returns><see cref="GetBucketInventoryConfigurationResult"/> instance</returns>
+        GetBucketInventoryConfigurationResult GetBucketInventoryConfiguration(GetBucketInventoryConfigurationRequest request);
+
+        /// <summary>
+        /// Gets <see cref="Bucket" /> bucket inventory configuration
+        /// </summary>
+        /// <param name="request"><see cref="ListBucketInventoryConfigurationRequest"/> instance</param>
+        /// <returns><see cref="ListBucketInventoryConfigurationResult"/> instance</returns>
+        ListBucketInventoryConfigurationResult ListBucketInventoryConfiguration(ListBucketInventoryConfigurationRequest request);
+
+        /// <summary>
+        /// InitiateBucketWorm
+        /// </summary>
+        /// <returns><see cref="InitiateBucketWormResult"/> instance</returns>
+        /// <param name="request"><see cref="InitiateBucketWormRequest"/> instance</param>
+        InitiateBucketWormResult InitiateBucketWorm(InitiateBucketWormRequest request);
+
+        /// <summary>
+        /// Gets <see cref="Bucket" /> AbortBucketWorm
+        /// </summary>
+        /// <param name="bucketName">Bucket name.</param>
+        void AbortBucketWorm(string bucketName);
+
+        /// <summary>
+        /// CompleteBucketWorm
+        /// </summary>
+        /// <param name="request"><see cref="CompleteBucketWormRequest"/> instance</param>
+        void CompleteBucketWorm(CompleteBucketWormRequest request);
+
+        /// <summary>
+        /// ExtendBucketWorm
+        /// </summary>
+        /// <param name="request"><see cref="ExtendBucketWormRequest"/> instance</param>
+        void ExtendBucketWorm(ExtendBucketWormRequest request);
+
+        /// <summary>
+        /// GetBucketWormResult
+        /// </summary>
+        /// <param name="bucketName">Bucket name.</param>
+        /// <returns><see cref="GetBucketWormResult"/> instance</returns>
+        GetBucketWormResult GetBucketWorm(string bucketName);
         #endregion
 
         #region Object Operations
@@ -553,7 +616,7 @@ namespace Aliyun.OSS
         /// </param>
         /// <returns><see cref="PutObjectResult" /> instance</returns>
         [Obsolete("PutBigObject is deprecated, please use ResumableUploadObject instead")]
-        PutObjectResult PutBigObject(string bucketName, string key, Stream content, ObjectMetadata metadata, long? partSize = null); 
+        PutObjectResult PutBigObject(string bucketName, string key, Stream content, ObjectMetadata metadata, long? partSize = null);
 
         /// <summary>
         /// Uploads the file via the signed url.
@@ -939,6 +1002,25 @@ namespace Aliyun.OSS
         /// <param name="request"><see cref="DeleteObjectTaggingRequest" /> instance</param>
         void DeleteObjectTagging(DeleteObjectTaggingRequest request);
 
+        /// <summary>
+        /// Gets the contents of a object based on a SQL statement. 
+        /// </summary>
+        /// <param name="request"><see cref="SelectObjectRequest" /> instance</param>
+        OssObject SelectObject(SelectObjectRequest request);
+
+        /// <summary>
+        /// Creates the meta of a select object
+        /// </summary>
+        /// <param name="request"><see cref="CreateSelectObjectMetaRequest" /> instance</param>
+        CreateSelectObjectMetaResult CreateSelectObjectMeta(CreateSelectObjectMetaRequest request);
+
+        /// <summary>
+        /// Processes the object
+        /// </summary>
+        /// <param name="request"><see cref="ProcessObjectRequest" /> instance</param>
+        /// <returns><see cref="ProcessObjectRequest" /> instance</returns>
+        ProcessObjectResult ProcessObject(ProcessObjectRequest request);
+
         #endregion
 
         #region Generate URL
@@ -949,7 +1031,7 @@ namespace Aliyun.OSS
         /// <param name="generatePresignedUriRequest">request parameter</param>
         /// <returns>The signed url. The user could use this url to access the object directly</returns>
         Uri GeneratePresignedUri(GeneratePresignedUriRequest generatePresignedUriRequest);
-        
+
         /// <summary>
         /// Generates the signed url with default expiration time (15 min) that supports HTTP GET method.
         /// </summary>
@@ -966,8 +1048,8 @@ namespace Aliyun.OSS
         /// <param name="expiration">Uri expiration time</param>
         /// <returns>signed url</returns>
         Uri GeneratePresignedUri(string bucketName, string key, DateTime expiration);
-        
-        
+
+
         /// <summary>
         /// Generates the pre-signed url with specified expiration time that supports the specified HTTP method
         /// </summary>
@@ -986,7 +1068,7 @@ namespace Aliyun.OSS
         /// <param name="method">HTTP method</param>
         /// <returns>signed url</returns>
         Uri GeneratePresignedUri(string bucketName, string key, DateTime expiration, SignHttpMethod method);
-        
+
         #endregion
 
         #region Generate Post Policy
@@ -1008,20 +1090,20 @@ namespace Aliyun.OSS
         /// <param name="listMultipartUploadsRequest">request parameter</param>
         /// <returns><see cref="MultipartUploadListing" /> instance</returns>
         MultipartUploadListing ListMultipartUploads(ListMultipartUploadsRequest listMultipartUploadsRequest);
-        
+
         /// <summary>
         /// Initiate a multipart upload
         /// </summary>
         /// <param name="initiateMultipartUploadRequest">request parameter</param>
         /// <returns><see cref="InitiateMultipartUploadResult"/> instance</returns>
         InitiateMultipartUploadResult InitiateMultipartUpload(InitiateMultipartUploadRequest initiateMultipartUploadRequest);
-        
+
         /// <summary>
         /// Aborts a multipart upload
         /// </summary>
         /// <param name="abortMultipartUploadRequest">request parameter</param>
         void AbortMultipartUpload(AbortMultipartUploadRequest abortMultipartUploadRequest);
-        
+
         /// <summary>
         /// Uploads a part
         /// </summary>
@@ -1076,14 +1158,84 @@ namespace Aliyun.OSS
         /// <param name="listPartsRequest">request parameter</param>
         /// <returns><see cref="PartListing" /> instance</returns>
         PartListing ListParts(ListPartsRequest listPartsRequest);
- 
+
         /// <summary>
         /// Completes a multipart upload. 
         /// </summary>
         /// <param name="completeMultipartUploadRequest">the request parameter</param>
         /// <returns><see cref="CompleteMultipartUploadResult" /> instance</returns>        
         CompleteMultipartUploadResult CompleteMultipartUpload(CompleteMultipartUploadRequest completeMultipartUploadRequest);
-        
+
+        #endregion
+
+        #region Live Channel
+        /// <summary>
+        /// Creates a live channel
+        /// </summary>
+        /// <param name="request"><see cref="CreateLiveChannelRequest" /> instance</param>
+        /// <returns><see cref="CreateLiveChannelResult" /> instance</returns>        
+        CreateLiveChannelResult CreateLiveChannel(CreateLiveChannelRequest request);
+
+        /// <summary>
+        /// Lists live channels
+        /// </summary>
+        /// <param name="request"><see cref="ListLiveChannelRequest" /> instance</param>
+        /// <returns><see cref="ListLiveChannelResult" /> instance</returns>        
+        ListLiveChannelResult ListLiveChannel(ListLiveChannelRequest request);
+
+        /// <summary>
+        /// Deletes a live channel
+        /// </summary>
+        /// <param name="request"><see cref="DeleteLiveChannelRequest" /> instance</param>
+        void DeleteLiveChannel(DeleteLiveChannelRequest request);
+
+        /// <summary>
+        /// Sets the live channel status
+        /// </summary>
+        /// <param name="request"><see cref="SetLiveChannelStatusRequest" /> instance</param>
+        void SetLiveChannelStatus(SetLiveChannelStatusRequest request);
+
+        /// <summary>
+        /// Gets the live channel information
+        /// </summary>
+        /// <param name="request"><see cref="GetLiveChannelInfoRequest" /> instance</param>
+        /// <returns><see cref="GetLiveChannelInfoResult" /> instance</returns>        
+        GetLiveChannelInfoResult GetLiveChannelInfo(GetLiveChannelInfoRequest request);
+
+        /// <summary>
+        /// Gets the live channel status
+        /// </summary>
+        /// <param name="request"><see cref="GetLiveChannelStatRequest" /> instance</param>
+        /// <returns><see cref="GetLiveChannelStatResult" /> instance</returns>        
+        GetLiveChannelStatResult GetLiveChannelStat(GetLiveChannelStatRequest request);
+
+        /// <summary>
+        /// Gets the live channel history
+        /// </summary>
+        /// <param name="request"><see cref="GetLiveChannelHistoryRequest" /> instance</param>
+        /// <returns><see cref="GetLiveChannelHistoryResult" /> instance</returns>        
+        GetLiveChannelHistoryResult GetLiveChannelHistory(GetLiveChannelHistoryRequest request);
+
+        /// <summary>
+        /// Creates a vod playlist
+        /// </summary>
+        /// <param name="request"><see cref="PostVodPlaylistRequest" /> instance</param>
+        void PostVodPlaylist(PostVodPlaylistRequest request);
+
+        /// <summary>
+        /// Gets a vod playlist
+        /// </summary>
+        /// <param name="request"><see cref="GetVodPlaylistRequest" /> instance</param>
+        /// <returns><see cref="GetVodPlaylistResult" /> instance</returns>        
+        GetVodPlaylistResult GetVodPlaylist(GetVodPlaylistRequest request);
+
+        /// <summary>
+        /// Generates a rtmp signed url
+        /// </summary>
+        /// <param name="request"><see cref="GenerateRtmpPresignedUriRequest" /> instance</param>
+        /// <returns>The signed url. The user could use this url to push stream directly</returns>
+        Uri GenerateRtmpPresignedUri(GenerateRtmpPresignedUriRequest request);
+
         #endregion
     }
 }

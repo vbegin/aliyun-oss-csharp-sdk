@@ -98,6 +98,46 @@ namespace Aliyun.OSS.Transform
         {
             return new DeleteObjectVersionsRequestSerializer(CreateContentSerializer<DeleteObjectVersionsRequestModel>());
         }
+
+        public ISerializer<CreateLiveChannelRequest, Stream> CreateCreateLiveChannelRequestSerializer()
+        {
+            return new CreateLiveChannelRequestSerializer(CreateContentSerializer<LiveChannelConfiguration>());
+        }
+
+        public ISerializer<RestoreObjectRequest, Stream> CreateRestoreObjectRequestSerializer()
+        {
+            return new RestoreObjectRequestSerializer(CreateContentSerializer<RestoreRequestModel>());
+        }
+
+        public ISerializer<SetBucketInventoryConfigurationRequest, Stream> CreateSetBucketInventoryConfigurationRequestSerializer()
+        {
+            return new SetBucketInventoryConfigurationRequestSerializer(CreateContentSerializer<InventoryConfigurationModel>());
+        }
+
+        public ISerializer<InitiateBucketWormRequest, Stream> CreateInitiateBucketWormSerializer()
+        {
+            return new InitiateBucketWormRequestSerializer(CreateContentSerializer<InitiateBucketWormModel>());
+        }
+
+        public ISerializer<ExtendBucketWormRequest, Stream> CreateExtendBucketWormSerializer()
+        {
+            return new ExtendBucketWormRequestSerializer(CreateContentSerializer<ExtendBucketWormModel>());
+        }
+
+        public ISerializer<SelectObjectRequest, Stream> CreateSelectObjectRequestSerializer()
+        {
+            return new SelectObjectRequestSerializer(CreateContentSerializer<SelectObjectRequestModel>());
+        }
+
+        public ISerializer<CreateSelectObjectMetaRequest, Stream> CreateSelectObjectCsvMetaRequestSerializer()
+        {
+            return new SelectObjectCsvMetaRequestSerializer(CreateContentSerializer<CsvMetaRequestModel>());
+        }
+
+        public ISerializer<CreateSelectObjectMetaRequest, Stream> CreateSelectObjectJsonMetaRequestSerializer()
+        {
+            return new SelectObjectJsonMetaRequestSerializer(CreateContentSerializer<JsonMetaRequestModel>());
+        }
     }
 
     internal class XmlSerializerFactory : SerializerFactory

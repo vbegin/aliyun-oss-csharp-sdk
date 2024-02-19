@@ -88,6 +88,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Config.cs" />
+    <Compile Include="Samples\LIveChannelSample.cs" />
     <Compile Include="Samples\UploadCallbackSample.cs" />
     <Compile Include="Samples\ProgressSample.cs" />
     <Compile Include="Samples\ImageProcessSample.cs" />
@@ -153,9 +154,6 @@
       <Project>{67BDC800-084C-4F84-8A80-661B5AFE499A}</Project>
       <Name>aliyun-oss-sdk</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
 </Project>

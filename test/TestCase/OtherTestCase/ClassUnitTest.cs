@@ -266,7 +266,7 @@ namespace Aliyun.OSS.Test.TestClass.OtherTestClass
             warp1.Seek(0, SeekOrigin.End);
 
             content.Seek(0, SeekOrigin.Begin);
-            var md5Stream = new MD5Stream(content, null , content.Length);
+            var md5Stream = new MD5Stream(content, null, content.Length);
             try
             {
                 var warp2 = new PartialWrapperStream(md5Stream, 0);
@@ -368,7 +368,7 @@ namespace Aliyun.OSS.Test.TestClass.OtherTestClass
             }
 
             //ResponseHeaders
-            var responseHeader  = new ResponseHeaderOverrides();
+            var responseHeader = new ResponseHeaderOverrides();
             request.ResponseHeaders = responseHeader;
             Assert.AreEqual(request.ResponseHeaders, responseHeader);
             try
@@ -720,7 +720,7 @@ namespace Aliyun.OSS.Test.TestClass.OtherTestClass
                 for (int i = 0; i < 256; i++)
                     checkdir += "a";
 
-                ctx = new ResumableContext("bucket", "key", checkdir); 
+                ctx = new ResumableContext("bucket", "key", checkdir);
                 var path = ctx.CheckpointFile;
                 Assert.IsTrue(false);
             }
@@ -906,7 +906,7 @@ namespace Aliyun.OSS.Test.TestClass.OtherTestClass
             Assert.AreEqual(rule1.Equals(rule2), false);
 
             rule1.Transitions = new LifecycleRule.LifeCycleTransition[2];
-            rule2.Transitions = null; 
+            rule2.Transitions = null;
             Assert.AreEqual(rule1.Equals(rule2), false);
 
             rule1.Transitions = new LifecycleRule.LifeCycleTransition[2];
@@ -1393,7 +1393,7 @@ namespace Aliyun.OSS.Test.TestClass.OtherTestClass
                 throw new NotImplementedException();
             }
         }
-            
+
 
         [Test]
         public void AppendObjectResponseDeserializerTest()
@@ -1413,7 +1413,7 @@ namespace Aliyun.OSS.Test.TestClass.OtherTestClass
             var factory = DeserializerFactory.GetFactory("text/xml");
             var deserializer = factory.CreateGetAclResultDeserializer();
             var headers = new Dictionary<string, string>();
-            string data = 
+            string data =
                 @" 
                 <AccessControlPolicy>
                     <Owner>
@@ -1647,7 +1647,7 @@ namespace Aliyun.OSS.Test.TestClass.OtherTestClass
         public void ListObjectsResponseDeserializerTest()
         {
             var factory = DeserializerFactory.GetFactory("text/xml");
-            var deserializer = factory.CreateListObjectsResultDeserializer();;
+            var deserializer = factory.CreateListObjectsResultDeserializer(); ;
             var headers = new Dictionary<string, string>();
             string data =
                 @" 
@@ -2438,6 +2438,895 @@ namespace Aliyun.OSS.Test.TestClass.OtherTestClass
         }
 
         [Test]
+        public void ListLiveChannelResultDeserializerTest()
+        {
+            var factory = DeserializerFactory.GetFactory("text/xml");
+            var deserializer = factory.CreateListLiveChannelResultDeserializer();
+            var headers = new Dictionary<string, string>();
+            string data =
+                @" 
+                <ListLiveChannelResult>
+                    <Prefix></Prefix>
+                    <Marker></Marker>
+                    <MaxKeys>1</MaxKeys>
+                    <IsTruncated>true</IsTruncated>
+                    <NextMarker>channel-0</NextMarker>
+                    <LiveChannel>
+                        <Name>channel-0</Name>
+                        <Description></Description>
+                        <Status>disabled</Status>
+                        <LastModified>2016-07-30T01:54:21.000Z</LastModified>
+                        <PublishUrls>
+                          <Url>rtmp://test-bucket.oss-cn-hangzhou.aliyuncs.com/live/channel-0</Url>
+                        </PublishUrls>
+                        <PlayUrls>
+                          <Url>http://test-bucket.oss-cn-hangzhou.aliyuncs.com/channel-0/playlist.m3u8</Url>
+                        </PlayUrls>
+                    </LiveChannel>
+                </ListLiveChannelResult>
+                ";
+            var content = new MemoryStream(Encoding.ASCII.GetBytes(data));
+            var xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            var result = deserializer.Deserialize(xmlStream);
+            Assert.AreEqual(result.Prefix, "");
+            Assert.AreEqual(result.Marker, "");
+            Assert.AreEqual(result.MaxKeys, 1);
+            Assert.AreEqual(result.IsTruncated, true);
+            Assert.AreEqual(result.NextMarker, "channel-0");
+            var LiveChannels = OssTestUtils.ToArray(result.LiveChannels);
+            Assert.AreEqual(LiveChannels.Count, 1);
+            Assert.AreEqual(LiveChannels[0].Name, "channel-0");
+            Assert.AreEqual(LiveChannels[0].Description, "");
+            Assert.AreEqual(LiveChannels[0].Status, "disabled");
+            Assert.AreEqual(LiveChannels[0].LastModified, DateUtils.ParseIso8601Date("2016-07-30T01:54:21.000Z"));
+            Assert.AreEqual(LiveChannels[0].PublishUrl, "rtmp://test-bucket.oss-cn-hangzhou.aliyuncs.com/live/channel-0");
+            Assert.AreEqual(LiveChannels[0].PlayUrl, "http://test-bucket.oss-cn-hangzhou.aliyuncs.com/channel-0/playlist.m3u8");
+
+            data =
+                @" 
+                <ListLiveChannelResult>
+                    <Prefix>channel</Prefix>
+                    <Marker>channel</Marker>
+                    <MaxKeys>10</MaxKeys>
+                    <IsTruncated>false</IsTruncated>
+                    <NextMarker>channel-1</NextMarker>
+                    <LiveChannel>
+                        <Name>channel-0</Name>
+                        <Description>discrption</Description>
+                        <Status>enable</Status>
+                        <LastModified>2016-07-30T01:54:21.000Z</LastModified>
+                        <PublishUrls>
+                          <Url>rtmp://test-bucket.oss-cn-hangzhou.aliyuncs.com/live/channel-0</Url>
+                        </PublishUrls>
+                        <PlayUrls>
+                          <Url>http://test-bucket.oss-cn-hangzhou.aliyuncs.com/channel-0/playlist.m3u8</Url>
+                        </PlayUrls>
+                    </LiveChannel>
+                    <LiveChannel>
+                        <Name>channel-1</Name>
+                        <Description></Description>
+                        <Status>disabled</Status>
+                        <LastModified>2017-07-30T01:54:21.000Z</LastModified>
+                        <PublishUrls>
+                          <Url>rtmp://test-bucket.oss-cn-hangzhou.aliyuncs.com/live/channel-1</Url>
+                        </PublishUrls>
+                        <PlayUrls>
+                          <Url>http://test-bucket.oss-cn-hangzhou.aliyuncs.com/channel-1/playlist.m3u8</Url>
+                        </PlayUrls>
+                    </LiveChannel>
+                </ListLiveChannelResult>
+                ";
+            content = new MemoryStream(Encoding.ASCII.GetBytes(data));
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            result = deserializer.Deserialize(xmlStream);
+            Assert.AreEqual(result.Prefix, "channel");
+            Assert.AreEqual(result.Marker, "channel");
+            Assert.AreEqual(result.MaxKeys, 10);
+            Assert.AreEqual(result.IsTruncated, false);
+            Assert.AreEqual(result.NextMarker, "channel-1");
+            LiveChannels = OssTestUtils.ToArray(result.LiveChannels);
+            Assert.AreEqual(LiveChannels.Count, 2);
+            Assert.AreEqual(LiveChannels[0].Name, "channel-0");
+            Assert.AreEqual(LiveChannels[0].Description, "discrption");
+            Assert.AreEqual(LiveChannels[0].Status, "enable");
+            Assert.AreEqual(LiveChannels[0].LastModified, DateUtils.ParseIso8601Date("2016-07-30T01:54:21.000Z"));
+            Assert.AreEqual(LiveChannels[0].PublishUrl, "rtmp://test-bucket.oss-cn-hangzhou.aliyuncs.com/live/channel-0");
+            Assert.AreEqual(LiveChannels[0].PlayUrl, "http://test-bucket.oss-cn-hangzhou.aliyuncs.com/channel-0/playlist.m3u8");
+
+            Assert.AreEqual(LiveChannels[1].Name, "channel-1");
+            Assert.AreEqual(LiveChannels[1].Description, "");
+            Assert.AreEqual(LiveChannels[1].Status, "disabled");
+            Assert.AreEqual(LiveChannels[1].LastModified, DateUtils.ParseIso8601Date("2017-07-30T01:54:21.000Z"));
+            Assert.AreEqual(LiveChannels[1].PublishUrl, "rtmp://test-bucket.oss-cn-hangzhou.aliyuncs.com/live/channel-1");
+            Assert.AreEqual(LiveChannels[1].PlayUrl, "http://test-bucket.oss-cn-hangzhou.aliyuncs.com/channel-1/playlist.m3u8");
+
+            data =
+                @" 
+                <ListLiveChannelResult>
+                    <Prefix>channel</Prefix>
+                    <Marker>channel</Marker>
+                    <NextMarker></NextMarker>
+                </ListLiveChannelResult>
+                ";
+            content = new MemoryStream(Encoding.ASCII.GetBytes(data));
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            result = deserializer.Deserialize(xmlStream);
+            Assert.AreEqual(result.Prefix, "channel");
+            Assert.AreEqual(result.Marker, "channel");
+            Assert.AreEqual(result.MaxKeys.HasValue, false);
+            Assert.AreEqual(result.IsTruncated.HasValue, false);
+            Assert.AreEqual(result.NextMarker, "");
+            LiveChannels = OssTestUtils.ToArray(result.LiveChannels);
+            Assert.AreEqual(LiveChannels.Count, 0);
+
+            data =
+                @" 
+                <ListLiveChannelResult>
+                </ListLiveChannelResult>
+                ";
+            content = new MemoryStream(Encoding.ASCII.GetBytes(data));
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            result = deserializer.Deserialize(xmlStream);
+            Assert.AreEqual(result.Prefix, null);
+            Assert.AreEqual(result.Marker, null);
+            Assert.AreEqual(result.MaxKeys.HasValue, false);
+            Assert.AreEqual(result.IsTruncated.HasValue, false);
+            Assert.AreEqual(result.NextMarker, null);
+            LiveChannels = OssTestUtils.ToArray(result.LiveChannels);
+            Assert.AreEqual(LiveChannels.Count, 0);
+
+            data = "invalid xml";
+            content = new MemoryStream(Encoding.ASCII.GetBytes(data));
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            xmlStream.Headers.Remove(HttpHeaders.ContentLength);
+            xmlStream.Headers.Add(HttpHeaders.ContentLength, data.Length.ToString());
+            try
+            {
+                result = deserializer.Deserialize(xmlStream);
+                Assert.IsTrue(false);
+            }
+            catch (ResponseDeserializationException e)
+            {
+                Assert.IsTrue(true, e.Message);
+            }
+        }
+
+        [Test]
+        public void GetLiveChannelHistoryResultDeserializerTest()
+        {
+            var factory = DeserializerFactory.GetFactory("text/xml");
+            var deserializer = factory.CreateGetLiveChannelHistoryResultDeserializer();
+            var headers = new Dictionary<string, string>();
+            string data =
+                @" 
+                <LiveChannelHistory>
+                  <LiveRecord>
+                    <StartTime>2016-07-30T01:53:21.000Z</StartTime>
+                    <EndTime>2016-07-30T01:53:31.000Z</EndTime>
+                    <RemoteAddr>10.101.194.148:56861</RemoteAddr>
+                  </LiveRecord>
+                  <LiveRecord>
+                    <StartTime>2016-07-30T01:53:35.000Z</StartTime>
+                    <EndTime>2016-07-30T01:53:45.000Z</EndTime>
+                    <RemoteAddr>10.101.194.148:57126</RemoteAddr>
+                  </LiveRecord>
+                  <LiveRecord>
+                    <StartTime>2016-07-30T01:53:49.000Z</StartTime>
+                    <EndTime>2016-07-30T01:53:59.000Z</EndTime>
+                    <RemoteAddr>10.101.194.148:57577</RemoteAddr>
+                  </LiveRecord>
+                  <LiveRecord>
+                    <StartTime>2016-07-30T01:54:04.000Z</StartTime>
+                    <EndTime>2016-07-30T01:54:14.000Z</EndTime>
+                    <RemoteAddr>10.101.194.148:57632</RemoteAddr>
+                  </LiveRecord>
+                </LiveChannelHistory>
+                ";
+            var content = new MemoryStream(Encoding.ASCII.GetBytes(data));
+            var xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            var result = deserializer.Deserialize(xmlStream);
+            var LiveRecords = OssTestUtils.ToArray(result.LiveRecords);
+            Assert.AreEqual(LiveRecords.Count, 4);
+            Assert.AreEqual(LiveRecords[0].StartTime, DateUtils.ParseIso8601Date("2016-07-30T01:53:21.000Z"));
+            Assert.AreEqual(LiveRecords[0].EndTime, DateUtils.ParseIso8601Date("2016-07-30T01:53:31.000Z"));
+            Assert.AreEqual(LiveRecords[0].RemoteAddr, "10.101.194.148:56861");
+            Assert.AreEqual(LiveRecords[3].StartTime, DateUtils.ParseIso8601Date("2016-07-30T01:54:04.000Z"));
+            Assert.AreEqual(LiveRecords[3].EndTime, DateUtils.ParseIso8601Date("2016-07-30T01:54:14.000Z"));
+            Assert.AreEqual(LiveRecords[3].RemoteAddr, "10.101.194.148:57632");
+
+            data =
+                @" 
+                <LiveChannelHistory>
+                  <LiveRecord>
+                    <StartTime>2016-07-30T01:53:35.000Z</StartTime>
+                    <EndTime>2016-07-30T01:53:45.000Z</EndTime>
+                    <RemoteAddr>10.101.194.148:57126</RemoteAddr>
+                  </LiveRecord>
+                  <LiveRecord>
+                    <StartTime>2016-07-30T01:53:49.000Z</StartTime>
+                    <EndTime>2016-07-30T01:53:59.000Z</EndTime>
+                    <RemoteAddr>10.101.194.148:57577</RemoteAddr>
+                  </LiveRecord>
+                </LiveChannelHistory>
+                ";
+            content = new MemoryStream(Encoding.ASCII.GetBytes(data));
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            result = deserializer.Deserialize(xmlStream);
+            LiveRecords = OssTestUtils.ToArray(result.LiveRecords);
+            Assert.AreEqual(LiveRecords.Count, 2);
+            Assert.AreEqual(LiveRecords[0].StartTime, DateUtils.ParseIso8601Date("2016-07-30T01:53:35.000Z"));
+            Assert.AreEqual(LiveRecords[0].EndTime, DateUtils.ParseIso8601Date("2016-07-30T01:53:45.000Z"));
+            Assert.AreEqual(LiveRecords[0].RemoteAddr, "10.101.194.148:57126");
+            Assert.AreEqual(LiveRecords[1].StartTime, DateUtils.ParseIso8601Date("2016-07-30T01:53:49.000Z"));
+            Assert.AreEqual(LiveRecords[1].EndTime, DateUtils.ParseIso8601Date("2016-07-30T01:53:59.000Z"));
+            Assert.AreEqual(LiveRecords[1].RemoteAddr, "10.101.194.148:57577");
+
+            data =
+                @" 
+                <LiveChannelHistory>
+                </LiveChannelHistory>
+                ";
+            content = new MemoryStream(Encoding.ASCII.GetBytes(data));
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            result = deserializer.Deserialize(xmlStream);
+            LiveRecords = OssTestUtils.ToArray(result.LiveRecords);
+            Assert.AreEqual(LiveRecords.Count, 0);
+
+            data = "invalid xml";
+            content = new MemoryStream(Encoding.ASCII.GetBytes(data));
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            xmlStream.Headers.Remove(HttpHeaders.ContentLength);
+            xmlStream.Headers.Add(HttpHeaders.ContentLength, data.Length.ToString());
+            try
+            {
+                result = deserializer.Deserialize(xmlStream);
+                Assert.IsTrue(false);
+            }
+            catch (ResponseDeserializationException e)
+            {
+                Assert.IsTrue(true, e.Message);
+            }
+        }
+
+        [Test]
+        public void GetLiveChannelStatResultDeserializerTest()
+        {
+            var factory = DeserializerFactory.GetFactory("text/xml");
+            var deserializer = factory.CreateGetLiveChannelStatResultDeserializer();
+            var headers = new Dictionary<string, string>();
+            string data =
+                @" 
+                <LiveChannelStat>
+                  <Status>Live</Status>
+                  <ConnectedTime>2016-08-25T06:25:15.000Z</ConnectedTime>
+                  <RemoteAddr>10.1.2.3:47745</RemoteAddr>
+                  <Video>
+                    <Width>1280</Width>
+                    <Height>536</Height>
+                    <FrameRate>24</FrameRate>
+                    <Bandwidth>101</Bandwidth>
+                    <Codec>H264</Codec>
+                  </Video>
+                  <Audio>
+                    <Bandwidth>10</Bandwidth>
+                    <SampleRate>44100</SampleRate>
+                    <Codec>ADPCM</Codec>
+                  </Audio>
+                </LiveChannelStat>
+                ";
+            var content = new MemoryStream(Encoding.ASCII.GetBytes(data));
+            var xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            var result = deserializer.Deserialize(xmlStream);
+            Assert.AreEqual(result.Status, "Live");
+            Assert.AreEqual(result.ConnectedTime, DateUtils.ParseIso8601Date("2016-08-25T06:25:15.000Z"));
+            Assert.AreEqual(result.RemoteAddr, "10.1.2.3:47745");
+            Assert.AreEqual(result.Width, 1280);
+            Assert.AreEqual(result.Height, 536);
+            Assert.AreEqual(result.FrameRate, 24);
+            Assert.AreEqual(result.VideoBandwidth, 101);
+            Assert.AreEqual(result.VideoCodec, "H264");
+            Assert.AreEqual(result.SampleRate, 44100);
+            Assert.AreEqual(result.AudioBandwidth, 10);
+            Assert.AreEqual(result.AudioCodec, "ADPCM");
+
+
+            data =
+                @" 
+                <LiveChannelStat>
+                  <Status>Idle</Status>
+                </LiveChannelStat>
+                ";
+            content = new MemoryStream(Encoding.ASCII.GetBytes(data));
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            result = deserializer.Deserialize(xmlStream);
+            Assert.AreEqual(result.Status, "Idle");
+
+            data =
+                @" 
+                <LiveChannelStat>
+                </LiveChannelStat>
+                ";
+            content = new MemoryStream(Encoding.ASCII.GetBytes(data));
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            result = deserializer.Deserialize(xmlStream);
+
+            data = "invalid xml";
+            content = new MemoryStream(Encoding.ASCII.GetBytes(data));
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            xmlStream.Headers.Remove(HttpHeaders.ContentLength);
+            xmlStream.Headers.Add(HttpHeaders.ContentLength, data.Length.ToString());
+            try
+            {
+                result = deserializer.Deserialize(xmlStream);
+                Assert.IsTrue(false);
+            }
+            catch (ResponseDeserializationException e)
+            {
+                Assert.IsTrue(true, e.Message);
+            }
+        }
+
+        [Test]
+        public void GetLiveChannelInfoResultDeserializerTest()
+        {
+            var factory = DeserializerFactory.GetFactory("text/xml");
+            var deserializer = factory.CreateGetLiveChannelInfoResultDeserializer();
+            var headers = new Dictionary<string, string>();
+            string data =
+                @" 
+                <LiveChannelConfiguration>
+                  <Description>description</Description>
+                  <Status>enabled</Status>
+                  <Target>
+                    <Type>HLS</Type>
+                    <FragDuration>2</FragDuration>
+                    <FragCount>3</FragCount>
+                    <PlaylistName>playlist.m3u8</PlaylistName>
+                  </Target>
+                </LiveChannelConfiguration>
+                ";
+            var content = new MemoryStream(Encoding.ASCII.GetBytes(data));
+            var xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            var result = deserializer.Deserialize(xmlStream);
+            Assert.AreEqual(result.Description, "description");
+            Assert.AreEqual(result.Status, "enabled");
+            Assert.AreEqual(result.Type, "HLS");
+            Assert.AreEqual(result.FragDuration, 2);
+            Assert.AreEqual(result.FragCount, 3);
+            Assert.AreEqual(result.PlaylistName, "playlist.m3u8");
+
+            data =
+                @" 
+                <LiveChannelConfiguration>
+                  <Description></Description>
+                  <Status>disabled</Status>
+                </LiveChannelConfiguration>
+                ";
+            content = new MemoryStream(Encoding.ASCII.GetBytes(data));
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            result = deserializer.Deserialize(xmlStream);
+            Assert.AreEqual(result.Description, "");
+            Assert.AreEqual(result.Status, "disabled");
+
+            data =
+                @" 
+                <LiveChannelConfiguration>
+                </LiveChannelConfiguration>
+                ";
+            content = new MemoryStream(Encoding.ASCII.GetBytes(data));
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            result = deserializer.Deserialize(xmlStream);
+
+            data = "invalid xml";
+            content = new MemoryStream(Encoding.ASCII.GetBytes(data));
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            xmlStream.Headers.Remove(HttpHeaders.ContentLength);
+            xmlStream.Headers.Add(HttpHeaders.ContentLength, data.Length.ToString());
+            try
+            {
+                result = deserializer.Deserialize(xmlStream);
+                Assert.IsTrue(false);
+            }
+            catch (ResponseDeserializationException e)
+            {
+                Assert.IsTrue(true, e.Message);
+            }
+        }
+
+        [Test]
+        public void CreateLiveChannelResultDeserializerTest()
+        {
+            var factory = DeserializerFactory.GetFactory("text/xml");
+            var deserializer = factory.CreateCreateLiveChannelResultDeserializer();
+            var headers = new Dictionary<string, string>();
+            string data =
+                @" 
+                <CreateLiveChannelResult>
+                  <PublishUrls>
+                    <Url>rtmp://test-bucket.oss-cn-hangzhou.aliyuncs.com/live/test-channel</Url>
+                  </PublishUrls>
+                  <PlayUrls>
+                    <Url>http://test-bucket.oss-cn-hangzhou.aliyuncs.com/test-channel/playlist.m3u8</Url>
+                  </PlayUrls>
+                </CreateLiveChannelResult>
+                ";
+            var content = new MemoryStream(Encoding.ASCII.GetBytes(data));
+            var xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            var result = deserializer.Deserialize(xmlStream);
+            Assert.AreEqual(result.PublishUrl, "rtmp://test-bucket.oss-cn-hangzhou.aliyuncs.com/live/test-channel");
+            Assert.AreEqual(result.PlayUrl, "http://test-bucket.oss-cn-hangzhou.aliyuncs.com/test-channel/playlist.m3u8");
+
+            data =
+                @" 
+                <CreateLiveChannelResult>
+                  <PublishUrls>
+                    <Url>rtmp://test-bucket.oss-cn-hangzhou.aliyuncs.com/live/test-channel</Url>
+                  </PublishUrls>
+                </CreateLiveChannelResult>
+                ";
+            content = new MemoryStream(Encoding.ASCII.GetBytes(data));
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            result = deserializer.Deserialize(xmlStream);
+            Assert.AreEqual(result.PublishUrl, "rtmp://test-bucket.oss-cn-hangzhou.aliyuncs.com/live/test-channel");
+            Assert.AreEqual(result.PlayUrl, null);
+
+            data =
+                @" 
+                <CreateLiveChannelResult>
+                  <PublishUrls>
+                  </PublishUrls>
+                </CreateLiveChannelResult>
+                ";
+            content = new MemoryStream(Encoding.ASCII.GetBytes(data));
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            result = deserializer.Deserialize(xmlStream);
+            Assert.AreEqual(result.PublishUrl, null);
+            Assert.AreEqual(result.PlayUrl, null);
+
+            data =
+                @" 
+                <CreateLiveChannelResult>
+                  <PlayUrls>
+                  </PlayUrls>
+                </CreateLiveChannelResult>
+                ";
+            content = new MemoryStream(Encoding.ASCII.GetBytes(data));
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            result = deserializer.Deserialize(xmlStream);
+            Assert.AreEqual(result.PublishUrl, null);
+            Assert.AreEqual(result.PlayUrl, null);
+
+            data =
+                @" 
+                <CreateLiveChannelResult>
+                </CreateLiveChannelResult>
+                ";
+            content = new MemoryStream(Encoding.ASCII.GetBytes(data));
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            result = deserializer.Deserialize(xmlStream);
+            Assert.AreEqual(result.PublishUrl, null);
+            Assert.AreEqual(result.PlayUrl, null);
+
+            data = "invalid xml";
+            content = new MemoryStream(Encoding.ASCII.GetBytes(data));
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            xmlStream.Headers.Remove(HttpHeaders.ContentLength);
+            xmlStream.Headers.Add(HttpHeaders.ContentLength, data.Length.ToString());
+            try
+            {
+                result = deserializer.Deserialize(xmlStream);
+                Assert.IsTrue(false);
+            }
+            catch (ResponseDeserializationException e)
+            {
+                Assert.IsTrue(true, e.Message);
+            }
+        }
+
+        [Test]
+        public void GetVodPlaylistResultDeserializerTest()
+        {
+            var factory = DeserializerFactory.GetFactory("text/xml");
+            var deserializer = factory.CreateGetVodPlaylistResultDeserializer();
+            var headers = new Dictionary<string, string>();
+            string data =
+                @" 
+                #EXTM3U
+                #EXT-X-VERSION:3
+                #EXT-X-MEDIA-SEQUENCE:0
+                #EXT-X-TARGETDURATION:13
+                #EXTINF:7.120,
+                1543895706266.ts
+                #EXTINF:5.840,
+                1543895706323.ts
+                #EXT-X-ENDLIST
+                ";
+            var content = new MemoryStream(Encoding.ASCII.GetBytes(data));
+            var xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            var result = deserializer.Deserialize(xmlStream);
+            Assert.AreEqual(result.Playlist, data);
+
+            data = "";
+            content = new MemoryStream(Encoding.ASCII.GetBytes(data));
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            result = deserializer.Deserialize(xmlStream);
+            Assert.AreEqual(result.Playlist, data);
+        }
+
+        [Test]
+        public void GetBucketInventoryConfigurationResultDeserializerTest()
+        {
+            var factory = DeserializerFactory.GetFactory("text/xml");
+            var deserializer = factory.CreateGetBucketInventoryConfigurationResultDeserializer();
+            var headers = new Dictionary<string, string>();
+            string data =
+                @" 
+                <InventoryConfiguration>
+                     <Id>report1</Id>
+                     <IsEnabled>true</IsEnabled>
+                     <Destination>
+                        <OSSBucketDestination>
+                           <Format>CSV</Format>
+                           <AccountId>1000000000000000</AccountId>
+                           <RoleArn>acs:ram::1000000000000000:role/bucket-inventory-role</RoleArn>
+                           <Bucket>acs:oss:::bucket_0001</Bucket>
+                           <Prefix>prefix1</Prefix>
+                           <Encryption>
+                              <SSE-OSS/>
+                           </Encryption>
+                        </OSSBucketDestination>
+                     </Destination>
+                     <Schedule>
+                        <Frequency>Daily</Frequency>
+                     </Schedule>
+                     <Filter>
+                       <Prefix>myprefix/</Prefix>
+                     </Filter>
+                     <IncludedObjectVersions>All</IncludedObjectVersions>
+                     <OptionalFields>
+                        <Field>Size</Field>
+                        <Field>LastModifiedDate</Field>
+                        <Field>StorageClass</Field>
+                        <Field>IsMultipartUploaded</Field>
+                        <Field>EncryptionStatus</Field>
+                        <Field>ETag</Field>
+                     </OptionalFields>
+                  </InventoryConfiguration>
+                ";
+            var content = new MemoryStream(Encoding.ASCII.GetBytes(data));
+            var xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            var result = deserializer.Deserialize(xmlStream);
+            var config = result.Configuration;
+            Assert.AreEqual(config.Id, "report1");
+            Assert.AreEqual(config.IsEnabled, true);
+            Assert.AreEqual(config.Destination.OSSBucketDestination.Format, InventoryFormat.CSV);
+            Assert.AreEqual(config.Destination.OSSBucketDestination.AccountId, "1000000000000000");
+            Assert.AreEqual(config.Destination.OSSBucketDestination.RoleArn, "acs:ram::1000000000000000:role/bucket-inventory-role");
+            Assert.AreEqual(config.Destination.OSSBucketDestination.Bucket, "bucket_0001");
+            Assert.AreEqual(config.Destination.OSSBucketDestination.Prefix, "prefix1");
+            Assert.AreNotEqual(config.Destination.OSSBucketDestination.Encryption.SSEOSS, null);
+            Assert.AreEqual(config.Destination.OSSBucketDestination.Encryption.SSEKMS, null);
+            Assert.AreEqual(config.Schedule.Frequency, InventoryFrequency.Daily);
+            Assert.AreEqual(config.Filter.Prefix, "myprefix/");
+            Assert.AreEqual(config.IncludedObjectVersions, InventoryIncludedObjectVersions.All);
+            Assert.AreEqual(config.OptionalFields[0], InventoryOptionalField.Size);
+            Assert.AreEqual(config.OptionalFields[1], InventoryOptionalField.LastModifiedDate);
+            Assert.AreEqual(config.OptionalFields[2], InventoryOptionalField.StorageClass);
+            Assert.AreEqual(config.OptionalFields[3], InventoryOptionalField.IsMultipartUploaded);
+            Assert.AreEqual(config.OptionalFields[4], InventoryOptionalField.EncryptionStatus);
+            Assert.AreEqual(config.OptionalFields[5], InventoryOptionalField.ETag);
+
+            data =
+                @" 
+                <InventoryConfiguration>
+                     <Id>report1</Id>
+                     <IsEnabled>false</IsEnabled>
+                     <Destination>
+                        <OSSBucketDestination>
+                           <Format>CSV</Format>
+                           <AccountId>1000000000000000</AccountId>
+                           <RoleArn>acs:ram::1000000000000000:role/bucket-inventory-role</RoleArn>
+                           <Bucket>acs:oss:::bucket_0001</Bucket>
+                           <Prefix>prefix1</Prefix>
+                           <Encryption>
+                              <SSE-KMS/>
+                           </Encryption>
+                        </OSSBucketDestination>
+                     </Destination>
+                     <Schedule>
+                        <Frequency>Weekly</Frequency>
+                     </Schedule>
+                     <IncludedObjectVersions>Current</IncludedObjectVersions>
+                     <OptionalFields>
+                     </OptionalFields>
+                  </InventoryConfiguration>
+                ";
+            content = new MemoryStream(Encoding.ASCII.GetBytes(data));
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            result = deserializer.Deserialize(xmlStream);
+            config = result.Configuration;
+            Assert.AreEqual(config.IsEnabled, false);
+            Assert.AreEqual(config.Destination.OSSBucketDestination.Encryption.SSEOSS, null);
+            Assert.AreNotEqual(config.Destination.OSSBucketDestination.Encryption.SSEKMS, null);
+            Assert.AreEqual(config.Destination.OSSBucketDestination.Encryption.SSEKMS.KeyId, null);
+            Assert.AreEqual(config.Filter, null);
+            Assert.AreEqual(config.Schedule.Frequency, InventoryFrequency.Weekly);
+            Assert.AreEqual(config.IncludedObjectVersions, InventoryIncludedObjectVersions.Current);
+            Assert.AreEqual(config.OptionalFields.Count, 0);
+
+            data =
+                @" 
+                <InventoryConfiguration>
+                     <Id>report1</Id>
+                     <IsEnabled>false</IsEnabled>
+                     <Destination>
+                        <OSSBucketDestination>
+                           <Format>CSV</Format>
+                           <AccountId>1000000000000000</AccountId>
+                           <RoleArn>acs:ram::1000000000000000:role/bucket-inventory-role</RoleArn>
+                           <Bucket>acs:oss:::bucket_0001</Bucket>
+                           <Prefix>prefix1</Prefix>
+                           <Encryption>
+                             <SSE-KMS>
+                               <KeyId>keyId</KeyId>
+                             </SSE-KMS>
+                           </Encryption>
+                        </OSSBucketDestination>
+                     </Destination>
+                     <Schedule>
+                        <Frequency>Weekly</Frequency>
+                     </Schedule>
+                     <IncludedObjectVersions>Current</IncludedObjectVersions>
+                     <OptionalFields>
+                     </OptionalFields>
+                  </InventoryConfiguration>
+                ";
+            content = new MemoryStream(Encoding.ASCII.GetBytes(data));
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            result = deserializer.Deserialize(xmlStream);
+            config = result.Configuration;
+            Assert.AreEqual(config.Destination.OSSBucketDestination.Encryption.SSEOSS, null);
+            Assert.AreNotEqual(config.Destination.OSSBucketDestination.Encryption.SSEKMS, null);
+            Assert.AreEqual(config.Destination.OSSBucketDestination.Encryption.SSEKMS.KeyId, "keyId");
+
+            data =
+                @" 
+                <InventoryConfiguration>
+                     <Id>report1</Id>
+                     <IsEnabled>true</IsEnabled>
+                     <Destination>
+                        <OSSBucketDestination>
+                           <Format>CSV</Format>
+                           <AccountId>1000000000000000</AccountId>
+                           <RoleArn>acs:ram::1000000000000000:role/bucket-inventory-role</RoleArn>
+                           <Bucket>acs:oss:::bucket_0001</Bucket>
+                           <Prefix>prefix1</Prefix>
+                           <Encryption>
+                           </Encryption>
+                        </OSSBucketDestination>
+                     </Destination>
+                     <Schedule>
+                        <Frequency>Daily</Frequency>
+                     </Schedule>
+                     <IncludedObjectVersions>All</IncludedObjectVersions>
+                  </InventoryConfiguration>
+                ";
+            content = new MemoryStream(Encoding.ASCII.GetBytes(data));
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            result = deserializer.Deserialize(xmlStream);
+            config = result.Configuration;
+            Assert.AreEqual(config.Destination.OSSBucketDestination.Encryption.SSEOSS, null);
+            Assert.AreEqual(config.Destination.OSSBucketDestination.Encryption.SSEKMS, null);
+
+            data =
+                @" 
+                <InventoryConfiguration>
+                    <Destination>
+                        <OSSBucketDestination>
+                        </OSSBucketDestination>
+                    </Destination>
+                </InventoryConfiguration>
+                ";
+            content = new MemoryStream(Encoding.ASCII.GetBytes(data));
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            result = deserializer.Deserialize(xmlStream);
+            config = result.Configuration;
+            Assert.AreNotEqual(config.Destination.OSSBucketDestination, null);
+            Assert.AreEqual(config.Filter, null);
+            Assert.AreEqual(config.Schedule, null);
+            Assert.AreEqual(config.IncludedObjectVersions, InventoryIncludedObjectVersions.All);
+            Assert.AreEqual(config.OptionalFields.Count, 0);
+
+            data =
+                @" 
+                <InventoryConfiguration>
+                </InventoryConfiguration>
+                ";
+            content = new MemoryStream(Encoding.ASCII.GetBytes(data));
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            result = deserializer.Deserialize(xmlStream);
+
+            data = "invalid xml";
+            content = new MemoryStream(Encoding.ASCII.GetBytes(data));
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            xmlStream.Headers.Remove(HttpHeaders.ContentLength);
+            xmlStream.Headers.Add(HttpHeaders.ContentLength, data.Length.ToString());
+            try
+            {
+                result = deserializer.Deserialize(xmlStream);
+                Assert.IsTrue(false);
+            }
+            catch (ResponseDeserializationException e)
+            {
+                Assert.IsTrue(true, e.Message);
+            }
+        }
+
+        [Test]
+        public void ListBucketInventoryConfigurationResultDeserializerTest()
+        {
+            var factory = DeserializerFactory.GetFactory("text/xml");
+            var deserializer = factory.CreateListBucketInventoryConfigurationResultDeserializer();
+            var headers = new Dictionary<string, string>();
+            string data =
+                @" 
+                <ListInventoryConfigurationsResult>
+                    <InventoryConfiguration>
+                        <Id>report1</Id>
+                        <IsEnabled>true</IsEnabled>
+                        <Destination>
+                            <OSSBucketDestination>
+                                <Format>CSV</Format>
+                                <AccountId>1000000000000000</AccountId>
+                                <RoleArn>acs:ram::1000000000000000:role/bucket-inventory-role</RoleArn>
+                                <Bucket>acs:oss:::destination-bucket</Bucket>
+                                <Prefix>prefix1</Prefix>
+                            </OSSBucketDestination>
+                        </Destination>
+                        <Schedule>
+                            <Frequency>Daily</Frequency>
+                        </Schedule>
+                        <Filter>
+                            <Prefix>prefix/One</Prefix>
+                        </Filter>
+                        <IncludedObjectVersions>All</IncludedObjectVersions>
+                        <OptionalFields>
+                            <Field>Size</Field>
+                            <Field>LastModifiedDate</Field>
+                            <Field>StorageClass</Field>
+                            <Field>IsMultipartUploaded</Field>
+                            <Field>EncryptionStatus</Field>
+                            <Field>ETag</Field>
+                        </OptionalFields>
+                    </InventoryConfiguration>
+                    <InventoryConfiguration>
+                        <Id>report2</Id>
+                        <IsEnabled>true</IsEnabled>
+                        <Destination>
+                            <OSSBucketDestination>
+                                <Format>CSV</Format>
+                                <AccountId>1000000000000000</AccountId>
+                                <RoleArn>acs:ram::1000000000000000:role/bucket-inventory-role</RoleArn>
+                                <Bucket>acs:oss:::destination-bucket</Bucket>
+                                <Prefix>prefix2</Prefix>
+                            </OSSBucketDestination>
+                        </Destination>
+                        <Schedule>
+                            <Frequency>Daily</Frequency>
+                        </Schedule>
+                        <Filter>
+                            <Prefix>prefix/Two</Prefix>
+                        </Filter>
+                        <IncludedObjectVersions>All</IncludedObjectVersions>
+                        <OptionalFields>
+                            <Field>Size</Field>
+                            <Field>LastModifiedDate</Field>
+                            <Field>ETag</Field>
+                            <Field>StorageClass</Field>
+                            <Field>IsMultipartUploaded</Field>
+                            <Field>EncryptionStatus</Field>
+                        </OptionalFields>
+                     </InventoryConfiguration>
+                     <InventoryConfiguration>
+                        <Id>report3</Id>
+                        <IsEnabled>false</IsEnabled>
+                        <Destination>
+                            <OSSBucketDestination>
+                                <Format>CSV</Format>
+                                <AccountId>1000000000000000</AccountId>
+                                <RoleArn>acs:ram::1000000000000000:role/bucket-inventory-role</RoleArn>
+                                <Bucket>acs:oss:::destination-bucket</Bucket>
+                                <Prefix>prefix3</Prefix>
+                            </OSSBucketDestination>
+                        </Destination>
+                        <Schedule>
+                            <Frequency>Daily</Frequency>
+                        </Schedule>
+                        <Filter>
+                            <Prefix>prefix/Three</Prefix>
+                        </Filter>
+                        <IncludedObjectVersions>All</IncludedObjectVersions>
+                    </InventoryConfiguration>
+                    <IsTruncated>true</IsTruncated>
+                    <NextContinuationToken>report2</NextContinuationToken> 
+                </ListInventoryConfigurationsResult>
+                ";
+            var content = new MemoryStream(Encoding.ASCII.GetBytes(data));
+            var xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            var result = deserializer.Deserialize(xmlStream);
+            var configs = OssTestUtils.ToArray(result.Configurations);
+            Assert.AreEqual(configs.Count, 3);
+            Assert.AreEqual(result.IsTruncated, true);
+            Assert.AreEqual(result.NextContinuationToken, "report2");
+            var config = configs[0];
+            Assert.AreEqual(config.Id, "report1");
+            Assert.AreEqual(config.IsEnabled, true);
+            Assert.AreEqual(config.Destination.OSSBucketDestination.Format, InventoryFormat.CSV);
+            Assert.AreEqual(config.Destination.OSSBucketDestination.AccountId, "1000000000000000");
+            Assert.AreEqual(config.Destination.OSSBucketDestination.RoleArn, "acs:ram::1000000000000000:role/bucket-inventory-role");
+            Assert.AreEqual(config.Destination.OSSBucketDestination.Bucket, "destination-bucket");
+            Assert.AreEqual(config.Destination.OSSBucketDestination.Prefix, "prefix1");
+            Assert.AreEqual(config.Destination.OSSBucketDestination.Encryption, null);
+            Assert.AreEqual(config.Schedule.Frequency, InventoryFrequency.Daily);
+            Assert.AreEqual(config.Filter.Prefix, "prefix/One");
+            Assert.AreEqual(config.IncludedObjectVersions, InventoryIncludedObjectVersions.All);
+            Assert.AreEqual(config.OptionalFields[0], InventoryOptionalField.Size);
+            Assert.AreEqual(config.OptionalFields[1], InventoryOptionalField.LastModifiedDate);
+            Assert.AreEqual(config.OptionalFields[2], InventoryOptionalField.StorageClass);
+            Assert.AreEqual(config.OptionalFields[3], InventoryOptionalField.IsMultipartUploaded);
+            Assert.AreEqual(config.OptionalFields[4], InventoryOptionalField.EncryptionStatus);
+            Assert.AreEqual(config.OptionalFields[5], InventoryOptionalField.ETag);
+
+            config = configs[2];
+            Assert.AreEqual(config.Id, "report3");
+            Assert.AreEqual(config.IsEnabled, false);
+            Assert.AreEqual(config.Filter.Prefix, "prefix/Three");
+
+            data =
+                @" 
+                <ListInventoryConfigurationsResult>
+                    <IsTruncated>false</IsTruncated>
+                    <NextContinuationToken></NextContinuationToken> 
+                </ListInventoryConfigurationsResult>
+                ";
+            content = new MemoryStream(Encoding.ASCII.GetBytes(data));
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            result = deserializer.Deserialize(xmlStream);
+            configs = OssTestUtils.ToArray(result.Configurations);
+            Assert.AreEqual(configs.Count, 0);
+            Assert.AreEqual(result.IsTruncated, false);
+            Assert.AreEqual(result.NextContinuationToken, "");
+
+            data =
+                @" 
+                <ListInventoryConfigurationsResult>
+                </ListInventoryConfigurationsResult>
+                ";
+            content = new MemoryStream(Encoding.ASCII.GetBytes(data));
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            result = deserializer.Deserialize(xmlStream);
+            configs = OssTestUtils.ToArray(result.Configurations);
+            Assert.AreEqual(configs.Count, 0);
+            Assert.AreEqual(result.IsTruncated, false);
+            Assert.AreEqual(result.NextContinuationToken, null);
+
+            data = "invalid xml";
+            content = new MemoryStream(Encoding.ASCII.GetBytes(data));
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            xmlStream.Headers.Remove(HttpHeaders.ContentLength);
+            xmlStream.Headers.Add(HttpHeaders.ContentLength, data.Length.ToString());
+            try
+            {
+                result = deserializer.Deserialize(xmlStream);
+                Assert.IsTrue(false);
+            }
+            catch (ResponseDeserializationException e)
+            {
+                Assert.IsTrue(true, e.Message);
+            }
+        }
+
+        [Test]
         public void SerializerFactoryTest()
         {
             var factory = SerializerFactory.GetFactory("text/xml");
@@ -2480,10 +3369,90 @@ namespace Aliyun.OSS.Test.TestClass.OtherTestClass
         }
 
         [Test]
+        public void CreateLiveChannelRequestSerializerTest()
+        {
+            var factory = SerializerFactory.GetFactory("text/xml");
+            var serializer = factory.CreateCreateLiveChannelRequestSerializer();
+
+            var request = new CreateLiveChannelRequest("bucket", "channel");
+            var result = serializer.Serialize(request);
+            var reader = new StreamReader(result);
+            var str = reader.ReadToEnd();
+            Assert.AreEqual(str.Contains("<Snapshot>"), false);
+
+            request = new CreateLiveChannelRequest("bucket", "channel")
+            {
+                RoleName = "my role name",
+                DestBucket = "my bucket",
+                NotifyTopic = "topic",
+                Interval = 10
+            };
+            result = serializer.Serialize(request);
+            reader = new StreamReader(result);
+            str = reader.ReadToEnd();
+            Assert.AreEqual(str.Contains("<Snapshot>"), true);
+            Assert.AreEqual(str.Contains("<RoleName>my role name</RoleName>"), true);
+            Assert.AreEqual(str.Contains("<DestBucket>my bucket</DestBucket>"), true);
+            Assert.AreEqual(str.Contains("<NotifyTopic>topic</NotifyTopic>"), true);
+            Assert.AreEqual(str.Contains("<Interval>10</Interval>"), true);
+            Assert.AreEqual(str.Contains("</Snapshot>"), true);
+        }
+
+        [Test]
+        public void RestoreObjectRequestSerializerTest()
+        {
+            var factory = SerializerFactory.GetFactory("text/xml");
+            var serializer = factory.CreateRestoreObjectRequestSerializer();
+
+            var request = new RestoreObjectRequest("bucket", "object");
+            var result = serializer.Serialize(request);
+            var reader = new StreamReader(result);
+            var str = reader.ReadToEnd();
+            Assert.AreEqual(request.IsUseDefaultParameter(), true);
+            Assert.AreEqual(str.Contains("<Days>1</Days>"), true);
+            Assert.AreEqual(str.Contains("<JobParameters>\r\n    <Tier>Standard</Tier>\r\n  </JobParameters>"), true);
+
+            request = new RestoreObjectRequest("bucket", "object")
+            {
+                Days = 10,
+                Tier = TierType.Bulk
+            };
+            result = serializer.Serialize(request);
+            reader = new StreamReader(result);
+            str = reader.ReadToEnd();
+            Assert.AreEqual(request.IsUseDefaultParameter(), false);
+            Assert.AreEqual(str.Contains("<Days>10</Days>"), true);
+            Assert.AreEqual(str.Contains("<JobParameters>\r\n    <Tier>Bulk</Tier>\r\n  </JobParameters>"), true);
+
+            request = new RestoreObjectRequest("bucket", "object")
+            {
+                Days = 9,
+            };
+            result = serializer.Serialize(request);
+            reader = new StreamReader(result);
+            str = reader.ReadToEnd();
+            Assert.AreEqual(request.IsUseDefaultParameter(), false);
+            Assert.AreEqual(str.Contains("<Days>9</Days>"), true);
+            Assert.AreEqual(str.Contains("<JobParameters>\r\n    <Tier>Standard</Tier>\r\n  </JobParameters>"), true);
+
+            request = new RestoreObjectRequest("bucket", "object")
+            {
+                Tier = TierType.Expedited
+            };
+            result = serializer.Serialize(request);
+            reader = new StreamReader(result);
+            str = reader.ReadToEnd();
+            Assert.AreEqual(request.IsUseDefaultParameter(), false);
+            Assert.AreEqual(str.Contains("<Days>1</Days>"), true);
+            Assert.AreEqual(str.Contains("<JobParameters>\r\n    <Tier>Expedited</Tier>\r\n  </JobParameters>"), true);
+        }
+
+        [Test]
         public void XmlStreamSerializerTest()
         {
             var streamSerializer = new XmlStreamSerializer<ResponseMock>();
-            try { 
+            try
+            {
                 streamSerializer.Serialize(null);
                 Assert.IsTrue(false);
             }
@@ -2497,11 +3466,11 @@ namespace Aliyun.OSS.Test.TestClass.OtherTestClass
         public void TagTest()
         {
             var tag0 = new Tag { Key = "key", Value = "value" };
-            var tag1 = new Tag { Key= "key", Value = "value" };
+            var tag1 = new Tag { Key = "key", Value = "value" };
             var tag2 = new Tag { Key = "key", Value = "value2" };
             var tag3 = new Tag { Key = "key3", Value = "value" };
-            var tag4 = new Tag { Key = "key"};
-            var tag5 = new Tag {Value = "value" };
+            var tag4 = new Tag { Key = "key" };
+            var tag5 = new Tag { Value = "value" };
 
             Tag tag6 = null;
 
@@ -2523,6 +3492,758 @@ namespace Aliyun.OSS.Test.TestClass.OtherTestClass
         public void EndTest()
         {
             var hash = new HashingWrapperCrc64();
+        }
+
+        [Test]
+        public void SelectObjectRequestDeserializerTest()
+        {
+            var factory = DeserializerFactory.GetFactory("text/xml");
+            var deserializer = factory.CreateSelectObjectRequestDeserializer(new SelectObjectRequest("bucket", "key"));
+            var headers = new Dictionary<string, string>();
+            var content = new MemoryStream(50);
+            //test frame
+            byte[] continueFrame = new byte[] {
+                1, 0x80, 0, 4,
+                0, 0, 0, 8,
+                0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 158,
+                0, 0, 0, 0};
+            byte[] endFrame = new byte[] {
+                1, 0x80, 0, 5,
+                0, 0, 0, 0x14,
+                0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0xc5,
+                0, 0, 0, 0, 0, 0, 0, 0xc5,
+                0, 0, 0, 0xc8,
+                0xbb, 0x57, 0xb1, 0x0b
+            };
+            byte[] dataFrame = new byte[] {
+                1, 0x80, 0, 1,
+                0, 0, 0, 18,
+                0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 158,
+                97, 98, 99, 100, 101, 102, 103, 104, 105, 106,
+                54, 113, 13, 83};
+
+            //data
+
+            content.Write(continueFrame, 0, continueFrame.Length);
+            content.Write(continueFrame, 0, continueFrame.Length);
+            content.Write(dataFrame, 0, dataFrame.Length);
+            content.Write(continueFrame, 0, continueFrame.Length);
+            content.Write(endFrame, 0, endFrame.Length);
+
+            content.Seek(0, SeekOrigin.Begin);
+
+            headers["x-oss-select-output-raw"] = "false";
+            var xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            var result = deserializer.Deserialize(xmlStream);
+
+            var buf = new byte[256];
+            int offset = 0;
+            for (int i = 1; i < 30; i++)
+            {
+                int got = result.Content.Read(buf, offset, i);
+                offset += got;
+            }
+
+            Assert.AreEqual("abcdefghij".Length, offset);
+            string str = Encoding.Default.GetString(buf, 0, offset);
+            Assert.AreEqual("abcdefghij", str);
+
+            //disable CRC
+            byte[] dataFrame_without_crc = new byte[] {
+                1, 0x80, 0, 1,
+                0, 0, 0, 18,
+                0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 158,
+                97, 98, 99, 100, 101, 102, 103, 104, 105, 106,
+                0, 0, 0, 0};
+
+            content = new MemoryStream();
+            headers = new Dictionary<string, string>();
+            content.Write(continueFrame, 0, continueFrame.Length);
+            content.Write(dataFrame_without_crc, 0, dataFrame_without_crc.Length);
+            content.Write(endFrame, 0, endFrame.Length);
+            content.Seek(0, SeekOrigin.Begin);
+
+            headers["x-oss-select-output-raw"] = "false";
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            result = deserializer.Deserialize(xmlStream);
+            int cnt = result.Content.Read(buf, 0, 256);
+            Assert.AreEqual("abcdefghij".Length, cnt);
+            str = Encoding.Default.GetString(buf, 0, cnt);
+            Assert.AreEqual("abcdefghij", str);
+
+            //invalid CRC
+            byte[] dataFrame_invalid_crc = new byte[] {
+                1, 0x80, 0, 1,
+                0, 0, 0, 18,
+                0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 158,
+                97, 98, 99, 100, 101, 102, 103, 104, 105, 106,
+                1, 0, 0, 0};
+
+            content = new MemoryStream();
+            headers = new Dictionary<string, string>();
+            content.Write(continueFrame, 0, continueFrame.Length);
+            content.Write(dataFrame_invalid_crc, 0, dataFrame_invalid_crc.Length);
+            content.Write(endFrame, 0, endFrame.Length);
+            content.Seek(0, SeekOrigin.Begin);
+
+            headers["x-oss-select-output-raw"] = "false";
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            result = deserializer.Deserialize(xmlStream);
+            try
+            {
+                cnt = result.Content.Read(buf, 0, 256);
+                Assert.IsTrue(false);
+            }
+            catch (ClientException e)
+            {
+                Assert.IsTrue(e.Message.Contains("Payload checksum check fail server CRC"));
+            }
+
+            //raw data
+            content = new MemoryStream(Encoding.ASCII.GetBytes("abcdef"));
+            headers = new Dictionary<string, string>();
+
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            result = deserializer.Deserialize(xmlStream);
+            cnt = result.Content.Read(buf, 0, 256);
+            Assert.AreEqual("abcdef".Length, cnt);
+            str = Encoding.Default.GetString(buf, 0, cnt);
+            Assert.AreEqual("abcdef", str);
+
+            //test endframe with error message
+            byte[] endFrame_with_message = new byte[] {
+                1, 0x80, 0, 5,
+                0, 0, 0, 0x18,
+                0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0xc5,
+                0, 0, 0, 0, 0, 0, 0, 0xc5,
+                0, 0, 0, 0xc8,
+                97, 98, 99, 100,
+                0xbb, 0x57, 0xb1, 0x0b
+            };
+
+            content = new MemoryStream();
+            headers = new Dictionary<string, string>();
+            content.Write(continueFrame, 0, continueFrame.Length);
+            content.Write(dataFrame, 0, dataFrame.Length);
+            content.Write(endFrame_with_message, 0, endFrame_with_message.Length);
+            content.Seek(0, SeekOrigin.Begin);
+
+            headers["x-oss-select-output-raw"] = "false";
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            result = deserializer.Deserialize(xmlStream);
+            cnt = result.Content.Read(buf, 0, 256);
+            Assert.AreEqual("abcdefghij".Length, cnt);
+            str = Encoding.Default.GetString(buf, 0, cnt);
+            Assert.AreEqual("abcdefghij", str);
+            var inputstream = (SelectObjectStream)result.Content;
+            Assert.AreEqual("abcd", inputstream.ErrorMessage);
+            Assert.AreEqual(200, inputstream.StatusCode);
+
+            //without endframe
+            content = new MemoryStream();
+            headers = new Dictionary<string, string>();
+            content.Write(continueFrame, 0, continueFrame.Length);
+            content.Write(dataFrame, 0, dataFrame.Length);
+            content.Write(continueFrame, 0, continueFrame.Length);
+
+            content.Seek(0, SeekOrigin.Begin);
+
+            headers["x-oss-select-output-raw"] = "false";
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            result = deserializer.Deserialize(xmlStream);
+            cnt = result.Content.Read(buf, 0, 256);
+
+            Assert.AreEqual("abcdefghij".Length, offset);
+            str = Encoding.Default.GetString(buf, 0, offset);
+            Assert.AreEqual("abcdefghij", str);
+
+            //test endframe with long error message
+            byte[] endFrame_with_long_message = new byte[] {
+                1, 0x80, 0, 5,
+                0, 0, 0, 152,
+                0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0xc5,
+                0, 0, 0, 0, 0, 0, 0, 0xc5,
+                0, 0, 0, 0xc8,
+                97, 98, 99, 100,
+                97, 98, 99, 100, 97, 98, 99, 100, 97, 98, 99, 100, 97, 98, 99, 100,
+                97, 98, 99, 100, 97, 98, 99, 100, 97, 98, 99, 100, 97, 98, 99, 100,
+                97, 98, 99, 100, 97, 98, 99, 100, 97, 98, 99, 100, 97, 98, 99, 100,
+                97, 98, 99, 100, 97, 98, 99, 100, 97, 98, 99, 100, 97, 98, 99, 100,
+                97, 98, 99, 100, 97, 98, 99, 100, 97, 98, 99, 100, 97, 98, 99, 100,
+                97, 98, 99, 100, 97, 98, 99, 100, 97, 98, 99, 100, 97, 98, 99, 100,
+                97, 98, 99, 100, 97, 98, 99, 100, 97, 98, 99, 100, 97, 98, 99, 100,
+                97, 98, 99, 100, 97, 98, 99, 100, 97, 98, 99, 100, 97, 98, 99, 100,
+                0xbb, 0x57, 0xb1, 0x0b
+            };
+
+            content = new MemoryStream();
+            headers = new Dictionary<string, string>();
+            content.Write(continueFrame, 0, continueFrame.Length);
+            content.Write(dataFrame, 0, dataFrame.Length);
+            content.Write(endFrame_with_long_message, 0, endFrame_with_long_message.Length);
+            content.Seek(0, SeekOrigin.Begin);
+
+            headers["x-oss-select-output-raw"] = "false";
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            result = deserializer.Deserialize(xmlStream);
+            cnt = result.Content.Read(buf, 0, 256);
+            Assert.AreEqual("abcdefghij".Length, cnt);
+            str = Encoding.Default.GetString(buf, 0, cnt);
+            Assert.AreEqual("abcdefghij", str);
+            inputstream = (SelectObjectStream)result.Content;
+            Assert.AreEqual(128, inputstream.ErrorMessage.Length);
+            Assert.AreEqual(200, inputstream.StatusCode);
+
+            //bad data
+            content = new MemoryStream(Encoding.ASCII.GetBytes("abcdefghijklmnopqrstuvwxyz"));
+            headers = new Dictionary<string, string>();
+
+            headers["x-oss-select-output-raw"] = "false";
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            result = deserializer.Deserialize(xmlStream);
+            try
+            {
+                cnt = result.Content.Read(buf, 0, 256);
+            }
+            catch (ClientException e)
+            {
+                Assert.IsTrue(true, e.Message);
+            }
+        }
+
+        [Test]
+        public void SelectObjectCSVInputFormatTest()
+        {
+            var inputFormat = new SelectObjectCSVInputFormat();
+            Assert.AreEqual(null, inputFormat.AllowQuotedRecordDelimiter);
+            Assert.AreEqual(null, inputFormat.FileHeaderInfo);
+
+            Assert.AreEqual(null, inputFormat.RecordDelimiter);
+            Assert.AreEqual(null, inputFormat.FieldDelimiter);
+            Assert.AreEqual(null, inputFormat.QuoteCharacter);
+            Assert.AreEqual(null, inputFormat.CommentCharacter);
+            Assert.AreEqual(null, inputFormat.Range);
+
+            Assert.AreEqual(CompressionType.None, inputFormat.CompressionType);
+        }
+
+        [Test]
+        public void SelectObjectCSVOutputFormatTest()
+        {
+            var outputFormat = new SelectObjectCSVOutputFormat();
+            Assert.AreEqual(null, outputFormat.OutputRawData);
+            Assert.AreEqual(null, outputFormat.EnablePayloadCrc);
+
+            Assert.AreEqual(null, outputFormat.RecordDelimiter);
+            Assert.AreEqual(null, outputFormat.FieldDelimiter);
+            Assert.AreEqual(null, outputFormat.KeepAllColumns);
+            Assert.AreEqual(null, outputFormat.OutputHeader);
+        }
+
+        [Test]
+        public void SelectObjectOptionsTest()
+        {
+            var options = new SelectObjectOptions();
+            Assert.AreEqual(null, options.SkipPartialDataRecord);
+            Assert.AreEqual(null, options.MaxSkippedRecordsAllowed);
+        }
+
+        [Test]
+        public void SelectObjectJSONInputFormatTest()
+        {
+            var inputFormat = new SelectObjectJSONInputFormat();
+            Assert.AreEqual(JSONType.DOCUMENT, inputFormat.Type);
+            Assert.AreEqual(null, inputFormat.ParseJsonNumberAsString);
+            Assert.AreEqual(null, inputFormat.Range);
+
+            Assert.AreEqual(CompressionType.None, inputFormat.CompressionType);
+        }
+
+        [Test]
+        public void SelectObjectJSONOutputFormatTest()
+        {
+            var outputFormat = new SelectObjectJSONOutputFormat();
+            Assert.AreEqual(null, outputFormat.OutputRawData);
+            Assert.AreEqual(null, outputFormat.EnablePayloadCrc);
+
+            Assert.AreEqual(null, outputFormat.RecordDelimiter);
+        }
+
+        [Test]
+        public void CreateSelectObjectRequestSerializerTest()
+        {
+            var factory = SerializerFactory.GetFactory("text/xml");
+            var serializer = factory.CreateSelectObjectRequestSerializer();
+
+            var request = new SelectObjectRequest("bucket", "key");
+            var result = serializer.Serialize(request);
+            var reader = new StreamReader(result);
+            var str = reader.ReadToEnd();
+            Assert.AreEqual(str.Contains("<SelectRequest>"), true);
+            Assert.AreEqual(str.Contains("<Expression"), true);
+            Assert.AreEqual(str.Contains("<InputSerialization>"), false);
+            Assert.AreEqual(str.Contains("<OutputSerialization>"), false);
+            Assert.AreEqual(str.Contains("<Options>"), false);
+
+            //Set CVS inputFormat, outputFormat, Opitons by default
+            request = new SelectObjectRequest("bucket", "key");
+            request.Expression = "select * from test";
+            var inputFormat = new SelectObjectCSVInputFormat();
+            var outputFormat = new SelectObjectCSVOutputFormat();
+            var options = new SelectObjectOptions();
+            request.InputFormat = inputFormat;
+            request.OutputFormat = outputFormat;
+            request.Options = options;
+            result = serializer.Serialize(request);
+            reader = new StreamReader(result);
+            str = reader.ReadToEnd();
+            Assert.AreEqual(str.Contains("<SelectRequest>"), true);
+            Assert.AreEqual(str.Contains("<Expression>c2VsZWN0ICogZnJvbSB0ZXN0"), true);
+            Assert.AreEqual(str.Contains("<InputSerialization>"), true);
+            Assert.AreEqual(str.Contains("<CompressionType>None"), true);
+            Assert.AreEqual(str.Contains("<CSV />"), true);
+            Assert.AreEqual(str.Contains("<FileHeaderInfo"), false);
+            Assert.AreEqual(str.Contains("<RecordDelimiter"), false);
+            Assert.AreEqual(str.Contains("<FieldDelimiter"), false);
+            Assert.AreEqual(str.Contains("<QuoteCharacter"), false);
+            Assert.AreEqual(str.Contains("<CommentCharacter"), false);
+            Assert.AreEqual(str.Contains("<Range"), false);
+            Assert.AreEqual(str.Contains("<AllowQuotedRecordDelimiter"), false);
+
+            Assert.AreEqual(str.Contains("<OutputSerialization>"), true);
+            Assert.AreEqual(str.Contains("<RecordDelimiter"), false);
+            Assert.AreEqual(str.Contains("<FieldDelimiter"), false);
+            Assert.AreEqual(str.Contains("<KeepAllColumns"), false);
+            Assert.AreEqual(str.Contains("<OutputRawData"), false);
+            Assert.AreEqual(str.Contains("<EnablePayloadCrc"), false);
+            Assert.AreEqual(str.Contains("<OutputHeader"), false);
+
+            Assert.AreEqual(str.Contains("<Options />"), true);
+            Assert.AreEqual(str.Contains("<SkipPartialDataRecord"), false);
+            Assert.AreEqual(str.Contains("<MaxSkippedRecordsAllowed"), false);
+
+            //
+            //Set CVS inputFormat, Opitons with value
+            request = new SelectObjectRequest("bucket", "key");
+            request.Expression = "select * from test";
+            inputFormat = new SelectObjectCSVInputFormat();
+            options = new SelectObjectOptions();
+            inputFormat.CompressionType = CompressionType.GZIP;
+            inputFormat.RecordDelimiter = ",";  //LA==
+            inputFormat.FieldDelimiter = ":";  //Og==
+            inputFormat.QuoteCharacter = "\""; //Ig ==
+            inputFormat.CommentCharacter = "#"; //Iw==
+            inputFormat.Range = "line-range=0-20"; //Ig ==
+            inputFormat.FileHeaderInfo = FileHeaderInfo.Ignore;
+            inputFormat.AllowQuotedRecordDelimiter = true;
+
+            options.MaxSkippedRecordsAllowed = 20;
+            options.SkipPartialDataRecord = true;
+
+            request.InputFormat = inputFormat;
+            request.Options = options;
+            result = serializer.Serialize(request);
+            reader = new StreamReader(result);
+            str = reader.ReadToEnd();
+            Assert.AreEqual(str.Contains("<SelectRequest>"), true);
+            Assert.AreEqual(str.Contains("<Expression>c2VsZWN0ICogZnJvbSB0ZXN0"), true);
+            Assert.AreEqual(str.Contains("<InputSerialization>"), true);
+            Assert.AreEqual(str.Contains("<CompressionType>GZIP"), true);
+            Assert.AreEqual(str.Contains("<CSV>"), true);
+            Assert.AreEqual(str.Contains("<RecordDelimiter>LA=="), true);
+            Assert.AreEqual(str.Contains("<FieldDelimiter>Og=="), true);
+            Assert.AreEqual(str.Contains("<QuoteCharacter>Ig=="), true);
+            Assert.AreEqual(str.Contains("<CommentCharacter>Iw=="), true);
+            Assert.AreEqual(str.Contains("<Range>line-range=0-20"), true);
+            Assert.AreEqual(str.Contains("<FileHeaderInfo>Ignore"), true);
+            Assert.AreEqual(str.Contains("<AllowQuotedRecordDelimiter>true"), true);
+
+            Assert.AreEqual(str.Contains("<OutputSerialization"), false);
+
+            Assert.AreEqual(str.Contains("<Options>"), true);
+            Assert.AreEqual(str.Contains("<SkipPartialDataRecord>true"), true);
+            Assert.AreEqual(str.Contains("<MaxSkippedRecordsAllowed>20"), true);
+
+            //Set CVS outputFormat with value
+            request = new SelectObjectRequest("bucket", "key");
+            request.Expression = "select * from test";
+
+            outputFormat = new SelectObjectCSVOutputFormat();
+            outputFormat.RecordDelimiter = ",";  //LA==
+            outputFormat.FieldDelimiter = ":";  //Og==
+            outputFormat.KeepAllColumns = false;
+            outputFormat.OutputHeader = true;
+            outputFormat.OutputRawData = false;
+            outputFormat.EnablePayloadCrc = true;
+
+            request.OutputFormat = outputFormat;
+            result = serializer.Serialize(request);
+            reader = new StreamReader(result);
+            str = reader.ReadToEnd();
+            Assert.AreEqual(str.Contains("<SelectRequest>"), true);
+            Assert.AreEqual(str.Contains("<Expression>c2VsZWN0ICogZnJvbSB0ZXN0"), true);
+            Assert.AreEqual(str.Contains("<InputSerialization"), false);
+            Assert.AreEqual(str.Contains("<OutputSerialization>"), true);
+            Assert.AreEqual(str.Contains("<RecordDelimiter>LA=="), true);
+            Assert.AreEqual(str.Contains("<FieldDelimiter>Og=="), true);
+            Assert.AreEqual(str.Contains("<KeepAllColumns>false"), true);
+            Assert.AreEqual(str.Contains("<OutputHeader>true"), true);
+            Assert.AreEqual(str.Contains("<OutputRawData>false"), true);
+            Assert.AreEqual(str.Contains("<EnablePayloadCrc>true"), true);
+
+            Assert.AreEqual(str.Contains("<Options"), false);
+
+            //Set JSON inputFormat, outputFormat, with default
+            request = new SelectObjectRequest("bucket", "key");
+            request.Expression = "select * from test";
+            var jInputFormat = new SelectObjectJSONInputFormat();
+            var jOutputFormat = new SelectObjectJSONOutputFormat();
+            request.InputFormat = jInputFormat;
+            request.OutputFormat = jOutputFormat;
+            result = serializer.Serialize(request);
+            reader = new StreamReader(result);
+            str = reader.ReadToEnd();
+            Assert.AreEqual(str.Contains("<SelectRequest>"), true);
+            Assert.AreEqual(str.Contains("<Expression>c2VsZWN0ICogZnJvbSB0ZXN0"), true);
+            Assert.AreEqual(str.Contains("<InputSerialization>"), true);
+            Assert.AreEqual(str.Contains("<CompressionType>None"), true);
+            Assert.AreEqual(str.Contains("<CSV"), false);
+            Assert.AreEqual(str.Contains("<JSON>"), true);
+            Assert.AreEqual(str.Contains("<Type>DOCUMENT"), true);
+            Assert.AreEqual(str.Contains("<Range"), false);
+            Assert.AreEqual(str.Contains("<ParseJsonNumberAsString"), false);
+
+            Assert.AreEqual(str.Contains("<OutputSerialization />"), true);
+            Assert.AreEqual(str.Contains("<RecordDelimiter"), false);
+            Assert.AreEqual(str.Contains("<OutputRawData"), false);
+            Assert.AreEqual(str.Contains("<EnablePayloadCrc"), false);
+
+            Assert.AreEqual(str.Contains("<Options"), false);
+
+
+            //Set JSON inputFormat, outputFormat, with value
+            request = new SelectObjectRequest("bucket", "key");
+            request.Expression = "select * from test";
+            jInputFormat = new SelectObjectJSONInputFormat();
+            jOutputFormat = new SelectObjectJSONOutputFormat();
+            jInputFormat.CompressionType = CompressionType.GZIP;
+            jInputFormat.Type = JSONType.LINES;
+            jInputFormat.ParseJsonNumberAsString = true;
+            jInputFormat.Range = "split-range=start-end";
+            jOutputFormat.EnablePayloadCrc = false;
+            jOutputFormat.OutputRawData = true;
+            jOutputFormat.RecordDelimiter = ":";  //Og==
+            request.InputFormat = jInputFormat;
+            request.OutputFormat = jOutputFormat;
+            result = serializer.Serialize(request);
+            reader = new StreamReader(result);
+            str = reader.ReadToEnd();
+            Assert.AreEqual(str.Contains("<SelectRequest>"), true);
+            Assert.AreEqual(str.Contains("<Expression>c2VsZWN0ICogZnJvbSB0ZXN0"), true);
+            Assert.AreEqual(str.Contains("<InputSerialization>"), true);
+            Assert.AreEqual(str.Contains("<CompressionType>GZIP"), true);
+            Assert.AreEqual(str.Contains("<CSV"), false);
+            Assert.AreEqual(str.Contains("<JSON>"), true);
+            Assert.AreEqual(str.Contains("<Type>LINES"), true);
+            Assert.AreEqual(str.Contains("<Range>split-range=start-end"), true);
+            Assert.AreEqual(str.Contains("<ParseJsonNumberAsString>true"), true);
+
+            Assert.AreEqual(str.Contains("<OutputSerialization>"), true);
+            Assert.AreEqual(str.Contains("<RecordDelimiter>Og=="), false);
+            Assert.AreEqual(str.Contains("<OutputRawData>true"), true);
+            Assert.AreEqual(str.Contains("<EnablePayloadCrc>false"), true);
+
+            Assert.AreEqual(str.Contains("<Options"), false);
+        }
+
+        [Test]
+        public void CreateSelectObjectMetaCSVInputFormatTest()
+        {
+            var inputFormat = new CreateSelectObjectMetaCSVInputFormat();
+            Assert.AreEqual(CompressionType.None, inputFormat.CompressionType);
+            Assert.AreEqual(null, inputFormat.RecordDelimiter);
+            Assert.AreEqual(null, inputFormat.FieldDelimiter);
+            Assert.AreEqual(null, inputFormat.QuoteCharacter);
+        }
+
+        [Test]
+        public void CreateSelectObjectMetaJSONInputFormatTest()
+        {
+            var inputFormat = new CreateSelectObjectMetaJSONInputFormat();
+            Assert.AreEqual(CompressionType.None, inputFormat.CompressionType);
+            Assert.AreEqual(JSONType.DOCUMENT, inputFormat.Type);
+        }
+
+        [Test]
+        public void SelectObjectCsvMetaRequestSerializerTest()
+        {
+            var factory = SerializerFactory.GetFactory("text/xml");
+            var serializer = factory.CreateSelectObjectCsvMetaRequestSerializer();
+
+            var request = new CreateSelectObjectMetaRequest("bucket", "key");
+            request.InputFormat = new CreateSelectObjectMetaCSVInputFormat();
+            var result = serializer.Serialize(request);
+            var reader = new StreamReader(result);
+            var str = reader.ReadToEnd();
+            Assert.AreEqual(str.Contains("<CsvMetaRequest>"), true);
+            Assert.AreEqual(str.Contains("<InputSerialization>"), true);
+            Assert.AreEqual(str.Contains("<CompressionType>None"), true);
+            Assert.AreEqual(str.Contains("<CSV />"), true);
+            Assert.AreEqual(str.Contains("<OverwriteIfExists>false"), true);
+
+            //
+            request = new CreateSelectObjectMetaRequest("bucket", "key");
+            var inputFormat = new CreateSelectObjectMetaCSVInputFormat();
+            inputFormat.RecordDelimiter = ",";  //LA==
+            inputFormat.FieldDelimiter = "#"; //Iw==
+            inputFormat.QuoteCharacter = ":";  //Og==
+            request.InputFormat = inputFormat;
+            request.OverwriteIfExists = true;
+            result = serializer.Serialize(request);
+            reader = new StreamReader(result);
+            str = reader.ReadToEnd();
+            Assert.AreEqual(str.Contains("<CsvMetaRequest>"), true);
+            Assert.AreEqual(str.Contains("<InputSerialization>"), true);
+            Assert.AreEqual(str.Contains("<CompressionType>None"), true);
+            Assert.AreEqual(str.Contains("<CSV>"), true);
+            Assert.AreEqual(str.Contains("<RecordDelimiter>LA=="), true);
+            Assert.AreEqual(str.Contains("<FieldDelimiter>Iw=="), true);
+            Assert.AreEqual(str.Contains("<QuoteCharacter>Og=="), true);
+            Assert.AreEqual(str.Contains("<OverwriteIfExists>true"), true);
+        }
+
+        [Test]
+        public void SelectObjectJSONMetaRequestSerializerTest()
+        {
+            var factory = SerializerFactory.GetFactory("text/xml");
+            var serializer = factory.CreateSelectObjectJsonMetaRequestSerializer();
+
+            var request = new CreateSelectObjectMetaRequest("bucket", "key");
+            request.InputFormat = new CreateSelectObjectMetaJSONInputFormat();
+            var result = serializer.Serialize(request);
+            var reader = new StreamReader(result);
+            var str = reader.ReadToEnd();
+            Assert.AreEqual(str.Contains("<JsonMetaRequest>"), true);
+            Assert.AreEqual(str.Contains("<InputSerialization>"), true);
+            Assert.AreEqual(str.Contains("<CompressionType>None"), true);
+            Assert.AreEqual(str.Contains("<JSON>"), true);
+            Assert.AreEqual(str.Contains("<Type>DOCUMENT"), true);
+            Assert.AreEqual(str.Contains("<OverwriteIfExists>false"), true);
+
+            //
+            request = new CreateSelectObjectMetaRequest("bucket", "key");
+            var inputFormat = new CreateSelectObjectMetaJSONInputFormat();
+            inputFormat.Type = JSONType.LINES;
+            inputFormat.CompressionType = CompressionType.GZIP;
+            request.InputFormat = inputFormat;
+            request.OverwriteIfExists = true;
+            result = serializer.Serialize(request);
+            reader = new StreamReader(result);
+            str = reader.ReadToEnd();
+            Assert.AreEqual(str.Contains("<JsonMetaRequest>"), true);
+            Assert.AreEqual(str.Contains("<InputSerialization>"), true);
+            Assert.AreEqual(str.Contains("<CompressionType>GZIP"), true);
+            Assert.AreEqual(str.Contains("<JSON>"), true);
+            Assert.AreEqual(str.Contains("<Type>LINES"), true);
+            Assert.AreEqual(str.Contains("<OverwriteIfExists>true"), true);
+        }
+
+        [Test]
+        public void SelectObjectMetaRequestDeserializerTest()
+        {
+            var factory = DeserializerFactory.GetFactory("text/xml");
+            var deserializer = factory.CreateSelectObjectMetaRequestDeserializer();
+            var headers = new Dictionary<string, string>();
+            var content = new MemoryStream(50);
+            //test frame
+            byte[] continueFrame = new byte[] {
+                1, 0x80, 0, 4,
+                0, 0, 0, 8,
+                0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 158,
+                0, 0, 0, 0};
+            byte[] csv_endFrame = new byte[] {
+                1, 0x80, 0, 6,
+                0, 0, 0, 36,
+                0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0xc5,
+                0, 0, 0, 0, 0, 0, 0, 0xc5,
+                0, 0, 0, 0xc8,
+                0, 0, 0, 5,
+                0, 0, 0, 0, 0, 0, 0, 20,
+                0, 0, 0, 7,
+                0, 0, 0, 0
+            };
+
+            content.Write(continueFrame, 0, continueFrame.Length);
+            content.Write(continueFrame, 0, continueFrame.Length);
+            content.Write(csv_endFrame, 0, csv_endFrame.Length);
+
+            content.Seek(0, SeekOrigin.Begin);
+
+            var xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            var result = deserializer.Deserialize(xmlStream);
+
+            Assert.AreEqual(200, result.Status);
+            Assert.AreEqual(197, result.Offset);
+            Assert.AreEqual(197, result.TotalScannedBytes);
+            Assert.AreEqual(5, result.SplitsCount);
+            Assert.AreEqual(20, result.RowsCount);
+            Assert.AreEqual(7, result.ColumnsCount);
+
+            //with message
+            byte[] csv_endFrame_with_message = new byte[] {
+                1, 0x80, 0, 6,
+                0, 0, 0, 40,
+                0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0xc5,
+                0, 0, 0, 0, 0, 0, 0, 0xc5,
+                0, 0, 0, 0xc8,
+                0, 0, 0, 5,
+                0, 0, 0, 0, 0, 0, 0, 20,
+                0, 0, 0, 8,
+                97, 98, 99, 100,
+                0, 0, 0, 0
+            };
+            content = new MemoryStream();
+            content.Write(csv_endFrame_with_message, 0, csv_endFrame_with_message.Length);
+            content.Seek(0, SeekOrigin.Begin);
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            result = deserializer.Deserialize(xmlStream);
+            Assert.AreEqual(200, result.Status);
+            Assert.AreEqual(197, result.Offset);
+            Assert.AreEqual(197, result.TotalScannedBytes);
+            Assert.AreEqual(5, result.SplitsCount);
+            Assert.AreEqual(20, result.RowsCount);
+            Assert.AreEqual(8, result.ColumnsCount);
+            Assert.AreEqual("abcd", result.ErrorMessage);
+
+            //invalid crc
+            byte[] csv_endFrame_with_invalid_crc = new byte[] {
+                1, 0x80, 0, 6,
+                0, 0, 0, 40,
+                0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0xc5,
+                0, 0, 0, 0, 0, 0, 0, 0xc5,
+                0, 0, 0, 0xc8,
+                0, 0, 0, 5,
+                0, 0, 0, 0, 0, 0, 0, 20,
+                0, 0, 0, 8,
+                97, 98, 99, 100,
+                1, 0, 0, 0
+            };
+            content = new MemoryStream();
+            content.Write(csv_endFrame_with_invalid_crc, 0, csv_endFrame_with_invalid_crc.Length);
+            content.Seek(0, SeekOrigin.Begin);
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            try
+            {
+                result = deserializer.Deserialize(xmlStream);
+                Assert.IsTrue(false);
+            }
+            catch (ClientException e)
+            {
+                Assert.IsTrue(e.Message.Contains("Payload checksum check fail server CRC"));
+            }
+
+            //json format
+            byte[] json_endFrame_with_message = new byte[] {
+                1, 0x80, 0, 7,
+                0, 0, 0, 36,
+                0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0xc5,
+                0, 0, 0, 0, 0, 0, 0, 0xc5,
+                0, 0, 0, 0xc8,
+                0, 0, 0, 6,
+                0, 0, 0, 0, 0, 0, 0, 20,
+                97, 98, 99, 100,
+                0, 0, 0, 0
+            };
+            content = new MemoryStream();
+            content.Write(json_endFrame_with_message, 0, json_endFrame_with_message.Length);
+            content.Seek(0, SeekOrigin.Begin);
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            result = deserializer.Deserialize(xmlStream);
+            Assert.AreEqual(200, result.Status);
+            Assert.AreEqual(197, result.Offset);
+            Assert.AreEqual(197, result.TotalScannedBytes);
+            Assert.AreEqual(6, result.SplitsCount);
+            Assert.AreEqual(20, result.RowsCount);
+            Assert.AreEqual(0, result.ColumnsCount);
+            Assert.AreEqual("abcd", result.ErrorMessage);
+
+            //invalid data format
+            content = new MemoryStream(Encoding.ASCII.GetBytes("abcdefghijklmnopqrstuvwxyz"));
+            headers = new Dictionary<string, string>();
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            try
+            {
+                result = deserializer.Deserialize(xmlStream);
+                Assert.IsTrue(false);
+            }
+            catch (ClientException e)
+            {
+                Assert.IsTrue(true, e.Message);
+            }
+
+            //without end format
+            content = new MemoryStream();
+            content.Write(continueFrame, 0, continueFrame.Length);
+            content.Write(continueFrame, 0, continueFrame.Length);
+            content.Seek(0, SeekOrigin.Begin);
+            headers = new Dictionary<string, string>();
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            try
+            {
+                result = deserializer.Deserialize(xmlStream);
+                Assert.IsTrue(false);
+            }
+            catch (ClientException e)
+            {
+                Assert.IsTrue(true, e.Message);
+            }
+
+            //with long error message
+            byte[] json_endFrame_with_long_message = new byte[] {
+                1, 0x80, 0, 7,
+                0, 0, 0, 164,
+                0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0xc5,
+                0, 0, 0, 0, 0, 0, 0, 0xc5,
+                0, 0, 0, 0xc9,
+                0, 0, 0, 6,
+                0, 0, 0, 0, 0, 0, 0, 20,
+                97, 98, 99, 100,
+                97, 98, 99, 100, 97, 98, 99, 100, 97, 98, 99, 100, 97, 98, 99, 100,
+                97, 98, 99, 100, 97, 98, 99, 100, 97, 98, 99, 100, 97, 98, 99, 100,
+                97, 98, 99, 100, 97, 98, 99, 100, 97, 98, 99, 100, 97, 98, 99, 100,
+                97, 98, 99, 100, 97, 98, 99, 100, 97, 98, 99, 100, 97, 98, 99, 100,
+                97, 98, 99, 100, 97, 98, 99, 100, 97, 98, 99, 100, 97, 98, 99, 100,
+                97, 98, 99, 100, 97, 98, 99, 100, 97, 98, 99, 100, 97, 98, 99, 100,
+                97, 98, 99, 100, 97, 98, 99, 100, 97, 98, 99, 100, 97, 98, 99, 100,
+                97, 98, 99, 100, 97, 98, 99, 100, 97, 98, 99, 100, 97, 98, 99, 100,
+                0, 0, 0, 0
+            };
+            content = new MemoryStream();
+            content.Write(json_endFrame_with_long_message, 0, json_endFrame_with_long_message.Length);
+            content.Seek(0, SeekOrigin.Begin);
+            headers = new Dictionary<string, string>();
+            xmlStream = new ResponseMock(HttpStatusCode.OK, headers, content);
+            result = deserializer.Deserialize(xmlStream);
+            Assert.AreEqual(201, result.Status);
+            Assert.AreEqual(197, result.Offset);
+            Assert.AreEqual(197, result.TotalScannedBytes);
+            Assert.AreEqual(6, result.SplitsCount);
+            Assert.AreEqual(20, result.RowsCount);
+            Assert.AreEqual(0, result.ColumnsCount);
+            Assert.AreEqual(128, result.ErrorMessage.Length);
         }
     }
 }
