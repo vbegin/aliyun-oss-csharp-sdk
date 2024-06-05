@@ -140,7 +140,7 @@ namespace Aliyun.OSS.Test.TestClass.BucketTestClass
         {
             var settings = AccountSettings.Load();
             //point to region (Beijing) other than Hangzhou
-            settings.OssEndpoint = Config.SecondEndpoint;
+            settings.OssEndpoint = Config.Endpoint;
             var ossClient = OssClientFactory.CreateOssClient(settings);
 
             //get a random bucketName
@@ -214,7 +214,7 @@ namespace Aliyun.OSS.Test.TestClass.BucketTestClass
 
             var settings = AccountSettings.Load();
             //point to location (Beijing) other than Hangzhou
-            settings.OssEndpoint = Config.SecondEndpoint;
+            settings.OssEndpoint = Config.Endpoint;
             var ossSecondClient = OssClientFactory.CreateOssClient(settings);
             //create the bucket
             _ossClient.CreateBucket(bucketName);
@@ -344,6 +344,32 @@ namespace Aliyun.OSS.Test.TestClass.BucketTestClass
 
             _ossClient.DeleteBucket(bucketName);
         }
+
+        [Test]
+        public void CreateBucketWithColdArchiveStorageClassTest()
+        {
+            var client = new OssClient("http://oss-ap-southeast-2.aliyuncs.com", Config.AccessKeyId, Config.AccessKeySecret);
+
+            //get a random bucketName
+            var bucketName = OssTestUtils.GetBucketName(_className);
+
+            //assert bucket does not exist
+            Assert.IsFalse(OssTestUtils.BucketExists(client, bucketName),
+                string.Format("Bucket {0} should not exist before creation", bucketName));
+
+            //create a new bucket
+            var request = new CreateBucketRequest(bucketName, StorageClass.ColdArchive, CannedAccessControlList.PublicReadWrite);
+            client.CreateBucket(request);
+            OssTestUtils.WaitForCacheExpire();
+            Assert.IsTrue(OssTestUtils.BucketExists(client, bucketName),
+                string.Format("Bucket {0} should exist after creation", bucketName));
+
+            //delete the new created bucket
+            client.DeleteBucket(bucketName);
+            OssTestUtils.WaitForCacheExpire();
+            Assert.IsFalse(OssTestUtils.BucketExists(client, bucketName),
+                string.Format("Bucket {0} should not exist after deletion", bucketName));
+        }
         #endregion
 
         #region Delete Bucket Cases
@@ -391,7 +417,8 @@ namespace Aliyun.OSS.Test.TestClass.BucketTestClass
         [Test]
         public void DoesBucketExistTestWithBucketExist()
         {
-            const string bucketName = "exist-bucket";
+            var bucketName = OssTestUtils.GetBucketName(_className);
+            //const string bucketName = "exist-bucket";
             try
             {
                 var result = _ossClient.CreateBucket(bucketName);
