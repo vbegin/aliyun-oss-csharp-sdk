@@ -98,6 +98,12 @@ namespace Aliyun.OSS
         public LifeCycleNoncurrentVersionTransition[] NoncurrentVersionTransitions { get; set; }
 
         /// <summary>
+        /// Gets or sets the fitler.
+        /// </summary>
+        /// <value>fitler.</value>
+        public LifeCycleFilter Filter { get; set; }
+
+        /// <summary>
         /// Determines whether the specified <see cref="Aliyun.OSS.LifecycleRule"/> is equal to the current <see cref="T:Aliyun.OSS.LifecycleRule"/>.
         /// </summary>
         /// <param name="obj">The <see cref="Aliyun.OSS.LifecycleRule"/> to compare with the current <see cref="T:Aliyun.OSS.LifecycleRule"/>.</param>
@@ -197,6 +203,13 @@ namespace Aliyun.OSS
                 }
             }
 
+            //Filter
+            if (this.Filter == null && obj.Filter != null) return false;
+
+            if (this.Filter != null && !this.Filter.Equals(obj.Filter))
+            {
+                return false;
+            }
             return true;
         }
 
@@ -308,6 +321,24 @@ namespace Aliyun.OSS
             public StorageClass StorageClass { get; set; }
 
             /// <summary>
+            /// Gets or sets the IsAccessTime.
+            /// </summary>
+            /// <value>IsAccessTime.</value>
+            public bool? IsAccessTime { get; set; }
+
+            /// <summary>
+            /// Gets or sets the ReturnToStdWhenVisit.
+            /// </summary>
+            /// <value>ReturnToStdWhenVisit.</value>
+            public bool? ReturnToStdWhenVisit { get; set; }
+
+            /// <summary>
+            /// Gets or sets the AllowSmallFile.
+            /// </summary>
+            /// <value>AllowSmallFile.</value>
+            public bool? AllowSmallFile { get; set; }
+
+            /// <summary>
             /// Determines whether the specified <see cref="Aliyun.OSS.LifecycleRule.LifeCycleTransition"/> is equal to
             /// the current <see cref="T:Aliyun.OSS.LifecycleRule.LifeCycleTransition"/>.
             /// </summary>
@@ -319,7 +350,13 @@ namespace Aliyun.OSS
                 if (transition == null) return false;
 
                 if (this.StorageClass != transition.StorageClass) return false;
-                    
+
+                if (this.IsAccessTime != transition.IsAccessTime) return false;
+
+                if (this.ReturnToStdWhenVisit != transition.ReturnToStdWhenVisit) return false;
+
+                if (this.AllowSmallFile != transition.AllowSmallFile) return false;
+
                 if (LifeCycleExpiration == null)
                 {
                     return transition.LifeCycleExpiration == null;
@@ -367,13 +404,97 @@ namespace Aliyun.OSS
             /// <value>The storage class.</value>
             public StorageClass StorageClass { get; set; }
 
+            /// <summary>
+            /// Gets or sets the IsAccessTime.
+            /// </summary>
+            /// <value>IsAccessTime.</value>
+            public bool? IsAccessTime { get; set; }
+
+            /// <summary>
+            /// Gets or sets the ReturnToStdWhenVisit.
+            /// </summary>
+            /// <value>ReturnToStdWhenVisit.</value>
+            public bool? ReturnToStdWhenVisit { get; set; }
+
+            /// <summary>
+            /// Gets or sets the AllowSmallFile.
+            /// </summary>
+            /// <value>AllowSmallFile.</value>
+            public bool? AllowSmallFile { get; set; }
+
             public bool Equals(LifeCycleNoncurrentVersionTransition obj)
             {
                 if (ReferenceEquals(this, obj)) return true;
 
                 if (obj == null) return false;
 
-                return this.NoncurrentDays == obj.NoncurrentDays && this.StorageClass == obj.StorageClass;
+                return this.NoncurrentDays == obj.NoncurrentDays &&
+                    this.StorageClass == obj.StorageClass &&
+                    this.IsAccessTime == obj.IsAccessTime &&
+                    this.ReturnToStdWhenVisit == obj.ReturnToStdWhenVisit &&
+                    this.AllowSmallFile == obj.AllowSmallFile;
+            }
+        }
+
+        /// <summary>
+        /// Life cycle Not.
+        /// </summary>
+        public class LifeCycleNot : IEquatable<LifeCycleNot>
+        {
+            /// <summary>
+            /// Gets or sets the Prefixs.
+            /// </summary>
+            /// <value>Prefix.</value>
+            public string Prefix { get; set; }
+
+            /// <summary>
+            /// Gets or sets the Tag.
+            /// </summary>
+            /// <value>Tag.</value>
+            public Tag Tag { get; set; }
+
+            public bool Equals(LifeCycleNot obj)
+            {
+                if (ReferenceEquals(this, obj)) return true;
+
+                if (obj == null) return false;
+
+                return this.Prefix == obj.Prefix && this.Tag == obj.Tag;
+            }
+        }
+
+        /// <summary>
+        /// Life cycle Filter.
+        /// </summary>
+        public class LifeCycleFilter : IEquatable<LifeCycleFilter>
+        {
+            /// <summary>
+            /// Gets or sets the Not.
+            /// </summary>
+            /// <value>Not.</value>
+            public LifeCycleNot Not { get; set; }
+
+            /// <summary>
+            /// Gets or sets the ObjectSizeLessThan.
+            /// </summary>
+            /// <value>ObjectSizeLessThan.</value>
+            public long? ObjectSizeGreaterThan { get; set; }
+
+            /// <summary>
+            /// Gets or sets the ObjectSizeLessThan.
+            /// </summary>
+            /// <value>ObjectSizeLessThan.</value>
+            public long? ObjectSizeLessThan { get; set; }
+
+            public bool Equals(LifeCycleFilter obj)
+            {
+                if (ReferenceEquals(this, obj)) return true;
+
+                if (obj == null) return false;
+
+                return this.Not == obj.Not && 
+                    this.ObjectSizeGreaterThan == obj.ObjectSizeGreaterThan &&
+                    this.ObjectSizeLessThan == obj.ObjectSizeLessThan;
             }
         }
     }

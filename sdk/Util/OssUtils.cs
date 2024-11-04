@@ -140,6 +140,24 @@ namespace Aliyun.OSS.Util
             return byteCount <= ObjectNameLengthLimit;
         }
 
+        /// <summary>
+        /// validates the object key
+        /// </summary>
+        /// <param name="key">object key</param>
+        /// <param name="strict">flag</param>
+        /// <returns>true:valid object key</returns>
+        public static bool IsObjectKeyValid(string key, bool strict)
+        {
+            if (string.IsNullOrEmpty(key) || key.StartsWith("/") || key.StartsWith("\\"))
+                return false;
+
+            if (strict && key.StartsWith("?"))
+                return false;
+
+            var byteCount = Encoding.GetEncoding(CharsetName).GetByteCount(key);
+            return byteCount <= ObjectNameLengthLimit;
+        }
+
         internal static String MakeResourcePath(Uri endpoint, string bucket, string key)
         {
             String resourcePath = (key == null) ? string.Empty : key;
@@ -325,6 +343,14 @@ namespace Aliyun.OSS.Util
             if (string.IsNullOrEmpty(key))
                 throw new ArgumentException(Resources.ExceptionIfArgumentStringIsNullOrEmpty, "key");
             if (!IsObjectKeyValid(key))
+                throw new ArgumentException(OssResources.ObjectKeyInvalid, "key");
+        }
+
+        internal static void CheckObjectKey(string key, bool strict)
+        {
+            if (string.IsNullOrEmpty(key))
+                throw new ArgumentException(Resources.ExceptionIfArgumentStringIsNullOrEmpty, "key");
+            if (!IsObjectKeyValid(key, strict))
                 throw new ArgumentException(OssResources.ObjectKeyInvalid, "key");
         }
 
@@ -591,6 +617,16 @@ namespace Aliyun.OSS.Util
                 ret |= (long)(data[start + i] & 0xFF);
             }
             return ret;
+        }
+
+        internal static string ToHexString(byte[] data, bool lowercase)
+        {
+            var sb = new StringBuilder();
+            for (var i = 0; i < data.Length; i++)
+            {
+                sb.Append(data[i].ToString(lowercase ? "x2" : "X2"));
+            }
+            return sb.ToString();
         }
     }
 }

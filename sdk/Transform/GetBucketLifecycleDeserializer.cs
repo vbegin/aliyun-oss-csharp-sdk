@@ -96,8 +96,36 @@ namespace Aliyun.OSS.Transform
                         rule.NoncurrentVersionTransitions[i] = new LifecycleRule.LifeCycleNoncurrentVersionTransition()
                         {
                             NoncurrentDays = lcc.NoncurrentVersionTransition[i].NoncurrentDays,
-                            StorageClass = lcc.NoncurrentVersionTransition[i].StorageClass
+                            StorageClass = lcc.NoncurrentVersionTransition[i].StorageClass,
+                            IsAccessTime = lcc.NoncurrentVersionTransition[i].IsAccessTime,
+                            ReturnToStdWhenVisit = lcc.NoncurrentVersionTransition[i].ReturnToStdWhenVisit,
+                            AllowSmallFile = lcc.NoncurrentVersionTransition[i].AllowSmallFile
                         };
+                    }
+                }
+
+                if (lcc.Filter != null)
+                {
+                    rule.Filter = new LifecycleRule.LifeCycleFilter()
+                    {
+                        ObjectSizeGreaterThan = lcc.Filter.ObjectSizeGreaterThan,
+                        ObjectSizeLessThan = lcc.Filter.ObjectSizeLessThan
+                    };
+                    if (lcc.Filter.Not != null)
+                    {
+                        rule.Filter.Not = new LifecycleRule.LifeCycleNot()
+                        {
+                            Prefix = lcc.Filter.Not.Prefix
+                        };
+
+                        if (lcc.Filter.Not.Tag != null)
+                        {
+                            rule.Filter.Not.Tag = new Tag()
+                            {
+                                Key = lcc.Filter.Not.Tag.Key,
+                                Value = lcc.Filter.Not.Tag.Value
+                            };
+                        }
                     }
                 }
 
@@ -137,6 +165,9 @@ namespace Aliyun.OSS.Transform
         {
             ConvertExpiration(transition, lifeCycleTransition.LifeCycleExpiration);
             lifeCycleTransition.StorageClass = transition.StorageClass;
+            lifeCycleTransition.IsAccessTime = transition.IsAccessTime;
+            lifeCycleTransition.ReturnToStdWhenVisit = transition.ReturnToStdWhenVisit;
+            lifeCycleTransition.AllowSmallFile = transition.AllowSmallFile;
         }
     }
 }

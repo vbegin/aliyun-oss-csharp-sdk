@@ -104,7 +104,7 @@ namespace Aliyun.OSS.Test.TestClass.ObjectTestClass
             HttpWebRequest req = null;
             HttpWebResponse res = null;
 
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
             //set expiration time to 5 seconds before
             var expireDate = now.AddSeconds(-5);
             var uri = _ossClient.GeneratePresignedUri(_bucketName, _objectKey, expireDate);
@@ -117,8 +117,15 @@ namespace Aliyun.OSS.Test.TestClass.ObjectTestClass
             }
             catch (WebException e)
             {
-                Assert.IsTrue(e.Message.Contains("403"), 
-                    string.Format("Unexpected exception: {0}", e.Message));
+                // sign v4 is 400
+                if (uri.ToString().Contains("x-oss-signature-version=OSS4-HMAC-SHA256"))
+                {
+                    Assert.IsTrue(e.Message.Contains("400"), string.Format("Unexpected exception: {0}", e.Message));
+                }
+                else
+                {
+                    Assert.IsTrue(e.Message.Contains("403"), string.Format("Unexpected exception: {0}", e.Message));
+                }
             }
             finally
             {
@@ -496,7 +503,7 @@ namespace Aliyun.OSS.Test.TestClass.ObjectTestClass
             HttpWebRequest req = null;
             HttpWebResponse res = null;
 
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
             //set expiration time to 5 seconds before
             var expireDate = now.AddSeconds(-5);
             var targetObject = OssTestUtils.GetObjectKey(_className);
@@ -514,8 +521,15 @@ namespace Aliyun.OSS.Test.TestClass.ObjectTestClass
             }
             catch (WebException e)
             {
-                Assert.IsTrue(e.Message.Contains("403"),
-                    string.Format("Unexpected exception: {0}", e.Message));
+                // sign v4 is 400
+                if (uri.ToString().Contains("x-oss-signature-version=OSS4-HMAC-SHA256"))
+                {
+                    Assert.IsTrue(e.Message.Contains("400"), string.Format("Unexpected exception: {0}", e.Message));
+                }
+                else
+                {
+                    Assert.IsTrue(e.Message.Contains("403"), string.Format("Unexpected exception: {0}", e.Message));
+                }
             }
             finally
             {
@@ -647,6 +661,135 @@ namespace Aliyun.OSS.Test.TestClass.ObjectTestClass
             request.Key = targetObject;
             _ossClient.GeneratePresignedUri(request);
         }
+
+        [Test]
+        public void GeneratePresignedUriArgumentTest()
+        {
+            var client = new OssClient("oss-cn-hangzhou", "ak", "sk");
+
+            try
+            {
+                var targetObject = "?";
+                var gpuRequest = new GeneratePresignedUriRequest(_bucketName, targetObject);
+                var uri = client.GeneratePresignedUri(gpuRequest);
+                Assert.IsTrue(false);
+            }
+            catch(Exception e)
+            {
+                Assert.IsTrue(e.ToString().Contains("Invalid Object Key"));
+                Assert.IsTrue(true);
+            }
+
+            try
+            {
+                var targetObject = "?123";
+                var gpuRequest = new GeneratePresignedUriRequest(_bucketName, targetObject);
+                var uri = client.GeneratePresignedUri(gpuRequest);
+                Assert.IsTrue(false);
+            }
+            catch (Exception e)
+            {
+                Assert.IsTrue(e.ToString().Contains("Invalid Object Key"));
+                Assert.IsTrue(true);
+            }
+
+            try
+            {
+                var targetObject = "123?123";
+                var gpuRequest = new GeneratePresignedUriRequest(_bucketName, targetObject);
+                var uri = client.GeneratePresignedUri(gpuRequest);
+                Assert.IsTrue(true);
+            }
+            catch 
+            {
+                Assert.IsTrue(false);
+            }
+
+
+            var conf = new ClientConfiguration();
+            Assert.IsTrue(conf.VerifyObjectStrict);
+            conf.VerifyObjectStrict = false;
+            client = new OssClient("oss-cn-hangzhou", "ak", "sk", conf);
+            try
+            {
+                var targetObject = "?";
+                var gpuRequest = new GeneratePresignedUriRequest(_bucketName, targetObject);
+                var uri = client.GeneratePresignedUri(gpuRequest);
+                Assert.IsTrue(true);
+
+                targetObject = "?123";
+                gpuRequest = new GeneratePresignedUriRequest(_bucketName, targetObject);
+                uri = client.GeneratePresignedUri(gpuRequest);
+                Assert.IsTrue(true);
+
+                targetObject = "123?123";
+                gpuRequest = new GeneratePresignedUriRequest(_bucketName, targetObject);
+                uri = client.GeneratePresignedUri(gpuRequest);
+                Assert.IsTrue(true);
+            }
+            catch
+            {
+                Assert.IsTrue(false);
+            }
+        }
+
+        [Test]
+        public void GeneratePresignedUriArgumentV4Test()
+        {
+            var conf = new ClientConfiguration();
+            conf.SignatureVersion = SignatureVersion.V4;
+            var client = new OssClient("oss-cn-hangzhou", "ak", "sk", conf);
+
+            try
+            {
+                var targetObject = "?";
+                var gpuRequest = new GeneratePresignedUriRequest(_bucketName, targetObject);
+                var uri = client.GeneratePresignedUri(gpuRequest);
+                Assert.IsTrue(true);
+
+                targetObject = "?123";
+                gpuRequest = new GeneratePresignedUriRequest(_bucketName, targetObject);
+                uri = client.GeneratePresignedUri(gpuRequest);
+                Assert.IsTrue(true);
+
+                targetObject = "123?123";
+                gpuRequest = new GeneratePresignedUriRequest(_bucketName, targetObject);
+                uri = client.GeneratePresignedUri(gpuRequest);
+                Assert.IsTrue(true);
+            }
+            catch(Exception)
+            {
+                Assert.IsTrue(false);
+
+            }
+
+            conf = new ClientConfiguration();
+            Assert.IsTrue(conf.VerifyObjectStrict);
+            conf.VerifyObjectStrict = false;
+            client = new OssClient("oss-cn-hangzhou", "ak", "sk", conf);
+            try
+            {
+                var targetObject = "?";
+                var gpuRequest = new GeneratePresignedUriRequest(_bucketName, targetObject);
+                var uri = client.GeneratePresignedUri(gpuRequest);
+                Assert.IsTrue(true);
+
+                targetObject = "?123";
+                gpuRequest = new GeneratePresignedUriRequest(_bucketName, targetObject);
+                uri = client.GeneratePresignedUri(gpuRequest);
+                Assert.IsTrue(true);
+
+                targetObject = "123?123";
+                gpuRequest = new GeneratePresignedUriRequest(_bucketName, targetObject);
+                uri = client.GeneratePresignedUri(gpuRequest);
+                Assert.IsTrue(true);
+            }
+            catch
+            {
+                Assert.IsTrue(false);
+            }
+        }
+
         #endregion
     }
 }

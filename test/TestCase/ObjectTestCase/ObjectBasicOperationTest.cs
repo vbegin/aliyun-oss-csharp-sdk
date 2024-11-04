@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using Aliyun.OSS;
 using Aliyun.OSS.Common;
-using Aliyun.OSS.Common.Communication;
 using Aliyun.OSS.Model;
 using Aliyun.OSS.Util;
 using Aliyun.OSS.Test.Util;
@@ -12,6 +10,7 @@ using NUnit.Framework;
 using System.Text;
 using System.Net;
 using System.Threading;
+using System.Collections.Specialized;
 
 namespace Aliyun.OSS.Test.TestClass.ObjectTestClass
 {
@@ -334,11 +333,13 @@ namespace Aliyun.OSS.Test.TestClass.ObjectTestClass
         public void UploadObjectWithMd5()
         {
             var key = OssTestUtils.GetObjectKey(_className);
+            var uploadTestFile = Path.Combine(Config.DownloadFolder, OssTestUtils.GetTargetFileName(""));
+            FileUtils.PrepareSampleFile(uploadTestFile, 110);
 
             try
             {
                 string md5;
-                using (var fs = File.Open(Config.UploadTestFile, FileMode.Open))
+                using (var fs = File.Open(uploadTestFile, FileMode.Open))
                 {
                     md5 = OssUtils.ComputeContentMd5(fs, fs.Length);
                 }
@@ -346,7 +347,7 @@ namespace Aliyun.OSS.Test.TestClass.ObjectTestClass
                 var meta = new ObjectMetadata() { ContentMd5 = md5 };
 
                 //upload the object
-                _ossClient.PutObject(_bucketName, key, Config.UploadTestFile, meta);
+                _ossClient.PutObject(_bucketName, key, uploadTestFile, meta);
                 Assert.IsTrue(OssTestUtils.ObjectExists(_ossClient, _bucketName, key));
             }
             finally
@@ -1096,9 +1097,12 @@ namespace Aliyun.OSS.Test.TestClass.ObjectTestClass
         public void UploadObjectWithNoSurfix()
         {
             var key = OssTestUtils.GetObjectKey(_className) + "";
+            var uploadTestFile = Path.Combine(Config.DownloadFolder, OssTestUtils.GetTargetFileName(""));
+            FileUtils.PrepareSampleFile(uploadTestFile, 110);
+
             try
             {
-                using (var fs = File.Open(Config.UploadTestFile, FileMode.Open))
+                using (var fs = File.Open(uploadTestFile, FileMode.Open))
                 {
                     _ossClient.PutObject(_bucketName, key, fs, null);
                 }
@@ -1176,7 +1180,9 @@ namespace Aliyun.OSS.Test.TestClass.ObjectTestClass
             var key = OssTestUtils.GetObjectKey(_className) + ".js";
             try
             {
-                using (var fs = File.Open(Config.UploadTestFile, FileMode.Open))
+                var uploadTestFile = Path.Combine(Config.DownloadFolder, OssTestUtils.GetTargetFileName(""));
+                FileUtils.PrepareSampleFile(uploadTestFile, 110);
+                using (var fs = File.Open(uploadTestFile, FileMode.Open))
                 {
                     _ossClient.PutObject(_bucketName, key, fs, null);
                 }
@@ -1205,7 +1211,10 @@ namespace Aliyun.OSS.Test.TestClass.ObjectTestClass
                 var metadata = new ObjectMetadata();
                 metadata.ContentType = "application/vnd.android.package-archive";
 
-                using (var fs = File.Open(Config.UploadTestFile, FileMode.Open))
+                var uploadTestFile = Path.Combine(Config.DownloadFolder, OssTestUtils.GetTargetFileName(""));
+                FileUtils.PrepareSampleFile(uploadTestFile, 110);
+
+                using (var fs = File.Open(uploadTestFile, FileMode.Open))
                 {
                     _ossClient.PutObject(_bucketName, key, fs, metadata);
                 }
@@ -1393,7 +1402,7 @@ namespace Aliyun.OSS.Test.TestClass.ObjectTestClass
         {
             try
             {
-                const string bucketName = "not-exist-bucket";
+                string bucketName = OssTestUtils.GetBucketName("not-exist-bucket");
                 const string key = "one";
                 try
                 {
@@ -2248,7 +2257,10 @@ namespace Aliyun.OSS.Test.TestClass.ObjectTestClass
 
             try
             {
-                using (var fs = File.Open(Config.UploadTestFile, FileMode.Open))
+                var uploadTestFile = Path.Combine(Config.DownloadFolder, OssTestUtils.GetTargetFileName(""));
+                FileUtils.PrepareSampleFile(uploadTestFile, 110);
+
+                using (var fs = File.Open(uploadTestFile, FileMode.Open))
                 {
                     var fileLength = fs.Length;
                     var request = new AppendObjectRequest(_bucketName, key)
@@ -2262,7 +2274,7 @@ namespace Aliyun.OSS.Test.TestClass.ObjectTestClass
                     Assert.AreEqual(fileLength, result.NextAppendPosition);
                 }
 
-                _ossClient.PutObject(_bucketName, key, Config.UploadTestFile);
+                _ossClient.PutObject(_bucketName, key, uploadTestFile);
             }
             finally
             {
@@ -2358,7 +2370,7 @@ namespace Aliyun.OSS.Test.TestClass.ObjectTestClass
         [Test]
         public void RestoreObjectWithXmlTest()
         {
-            var client = new OssClient("http://oss-ap-southeast-2.aliyuncs.com", Config.AccessKeyId, Config.AccessKeySecret);
+            var client = new OssClient(Config.Endpoint, Config.AccessKeyId, Config.AccessKeySecret);
 
             //get a random bucketName
             var bucketName = OssTestUtils.GetBucketName(_className);
@@ -2562,6 +2574,75 @@ namespace Aliyun.OSS.Test.TestClass.ObjectTestClass
             Assert.AreNotEqual(policy.IndexOf("expiration"), -1);
         }
 
+        [Test]
+        public void UsePostPolicyUploadDataTest()
+        {
+            var actualPostPolicy = "";
+            var encodePolicy = "";
+            var signature = "";
+
+            var fileName = "1.png\"},{\"key\":\"2.png\"}]}//";
+            var key = "4.png\"},{\"key\":\"5.png\"}]}//";
+            var bucketName = _bucketName;
+
+            var conds = new PolicyConditions();
+            conds.AddConditionItem("bucket", bucketName);
+            conds.AddConditionItem("fileName", fileName);
+            conds.AddConditionItem(MatchMode.Exact, PolicyConditions.CondKey, key);
+            actualPostPolicy = _ossClient.GeneratePostPolicy(DateTime.UtcNow.AddSeconds(3600), conds); ;
+            encodePolicy = Convert.ToBase64String(Encoding.Default.GetBytes(actualPostPolicy));
+            signature = Common.Authentication.ServiceSignature.Create().ComputeSignature(Config.AccessKeySecret, encodePolicy);
+
+            var endpoint = Config.Endpoint;
+            var urlStr = "";
+            if (endpoint.StartsWith("http://"))
+            {
+                urlStr = "http://" + bucketName + "." + endpoint.Substring(7);
+            } 
+            else if (endpoint.StartsWith("https://"))
+            {
+                urlStr = "https://" + bucketName + "." + endpoint.Substring(8);
+            }
+            else { 
+                urlStr = "http://" + bucketName + "." + endpoint;
+            }
+
+            Dictionary<String, String> header = new Dictionary<string, string>();
+
+
+            // upload ok
+            try {
+                NameValueCollection nameValues = new NameValueCollection();
+                nameValues.Add("key", key);
+                nameValues.Add("fileName", fileName);
+                nameValues.Add("OSSAccessKeyId", Config.AccessKeyId);
+                nameValues.Add("policy", encodePolicy);
+                nameValues.Add("Signature", signature);
+                PostMultipartFormData(urlStr, header, nameValues, "image/jpg", "1.jpeg", Encoding.Default.GetBytes("hello"));
+            }
+            catch(Exception e)
+            {
+                Assert.IsTrue(false, e.Message);
+            }
+
+            // upload fail
+            try
+            {
+                NameValueCollection nameValues = new NameValueCollection();
+                nameValues.Add("key", "1.txt");
+                nameValues.Add("fileName", fileName);
+                nameValues.Add("OSSAccessKeyId", Config.AccessKeyId);
+                nameValues.Add("policy", encodePolicy);
+                nameValues.Add("Signature", signature);
+                PostMultipartFormData(urlStr, header, nameValues, "image/jpg", "1.jpeg", Encoding.Default.GetBytes("hello"));
+                Assert.IsTrue(false, "should not here");
+            }
+            catch (Exception e)
+            {
+                Assert.IsTrue(true, e.Message);
+            }
+
+        }
 
         #endregion
 
@@ -2619,6 +2700,65 @@ namespace Aliyun.OSS.Test.TestClass.ObjectTestClass
                 _event.Set();
             }
         }
+
+        private static void PostMultipartFormData(string url,
+            Dictionary<string, string> headers,
+            NameValueCollection nameValueCollection,
+            string contentType, string fileName, byte[] fileData)
+        {
+            string boundary = "9431149156168";
+            string Enter = "\r\n";
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            request.Method = "POST";
+
+            //add header
+            foreach (var item in headers)
+            {
+                request.Headers.Add(item.Key, item.Value);
+            }
+
+            request.ContentType = "multipart/form-data;boundary=" + boundary;
+
+            Stream myRequestStream = request.GetRequestStream();
+
+            // key & value
+            string[] allKeys = nameValueCollection.AllKeys;
+            foreach (string key in allKeys)
+            {
+                string filedValue = "--" + boundary + Enter
+                    + "Content-Disposition: form-data; name=\"" + key + "\"" + Enter + Enter
+                    + nameValueCollection[key] + Enter;
+
+                var bytes = Encoding.UTF8.GetBytes(filedValue);
+                myRequestStream.Write(bytes, 0, bytes.Length);
+            }
+
+            // data front 
+            string dataFiledBegin = "--" + boundary + Enter
+                    + "Content-Disposition: form-data; name=\"file\"; " + "filename=\"" + fileName + "\""+ Enter + Enter
+                    + "Content-Type: " + contentType + Enter + Enter;
+            var data_bytes = Encoding.UTF8.GetBytes(dataFiledBegin);
+            myRequestStream.Write(data_bytes, 0, data_bytes.Length);
+
+            // data 
+            myRequestStream.Write(fileData, 0, fileData.Length);
+
+            // data end
+            string dataFiledEnd = Enter + "--" + boundary + "--";
+            data_bytes = Encoding.UTF8.GetBytes(dataFiledEnd);
+            myRequestStream.Write(data_bytes, 0, data_bytes.Length);
+
+            //send data
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+
+            Stream myResponseStream = response.GetResponseStream();
+            StreamReader myStreamReader = new StreamReader(myResponseStream, Encoding.GetEncoding("utf-8"));
+
+            myStreamReader.ReadToEnd();
+            myStreamReader.Close();
+            myResponseStream.Close();
+        }
+
         #endregion
     };
 }

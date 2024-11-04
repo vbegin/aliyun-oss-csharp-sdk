@@ -83,8 +83,6 @@ namespace Aliyun.OSS.Transform
                     }
                 }
 
-
-
                 if (rules[i].NoncurrentVersionExpiration != null)
                 {
                     lcc.LifecycleRules[i].NoncurrentVersionExpiration = new LifecycleRuleNoncurrentVersionExpiration()
@@ -103,8 +101,37 @@ namespace Aliyun.OSS.Transform
                             new LifecycleRuleNoncurrentVersionTransition()
                             {
                                 NoncurrentDays = rules[i].NoncurrentVersionTransitions[j].NoncurrentDays,
-                                StorageClass = rules[i].NoncurrentVersionTransitions[j].StorageClass
+                                StorageClass = rules[i].NoncurrentVersionTransitions[j].StorageClass,
+                                IsAccessTime = rules[i].NoncurrentVersionTransitions[j].IsAccessTime,
+                                ReturnToStdWhenVisit = rules[i].NoncurrentVersionTransitions[j].ReturnToStdWhenVisit,
+                                AllowSmallFile = rules[i].NoncurrentVersionTransitions[j].AllowSmallFile
                             };
+                    }
+                }
+
+                if (rules[i].Filter != null)
+                {
+                    lcc.LifecycleRules[i].Filter = new LifecycleRuleFilter()
+                    {
+                        ObjectSizeGreaterThan = rules[i].Filter.ObjectSizeGreaterThan,
+                        ObjectSizeLessThan = rules[i].Filter.ObjectSizeLessThan
+                    };
+
+                    if (rules[i].Filter.Not != null)
+                    {
+                        lcc.LifecycleRules[i].Filter.Not = new LifecycleNot()
+                        {
+                            Prefix = rules[i].Filter.Not.Prefix
+                        };
+
+                        if (rules[i].Filter.Not.Tag != null)
+                        {
+                            lcc.LifecycleRules[i].Filter.Not.Tag = new LifecycleRuleTag()
+                            {
+                                Key = rules[i].Filter.Not.Tag.Key,
+                                Value = rules[i].Filter.Not.Tag.Value,
+                            };
+                        }
                     }
                 }
             }
@@ -123,6 +150,9 @@ namespace Aliyun.OSS.Transform
             }
 
             lifecycleRuleTransition.StorageClass = transition.StorageClass;
+            lifecycleRuleTransition.IsAccessTime = transition.IsAccessTime;
+            lifecycleRuleTransition.ReturnToStdWhenVisit = transition.ReturnToStdWhenVisit;
+            lifecycleRuleTransition.AllowSmallFile = transition.AllowSmallFile;
 
             return lifecycleRuleTransition;
         }

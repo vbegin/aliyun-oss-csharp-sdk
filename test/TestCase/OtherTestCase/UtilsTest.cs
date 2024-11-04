@@ -107,28 +107,15 @@ namespace Aliyun.OSS.Test.TestClass.OtherTestClass
         }
 
         [Test]
-        public void OssRequestSignerTest()
+        public void IsObjectKeyValidTest()
         {
-            var request = new ServiceRequest();
-            var credentials = new Common.Authentication.DefaultCredentials("accessKeyId", " ", "securityToken");
-            var signer = new OssRequestSigner("");
-            signer.Sign(request, credentials);
+            Assert.AreEqual(OssUtils.IsObjectKeyValid("", true), false);
+            Assert.AreEqual(OssUtils.IsObjectKeyValid("?", true), false);
+            Assert.AreEqual(OssUtils.IsObjectKeyValid("?123", true), false);
 
-            try
-            {
-                credentials = new Common.Authentication.DefaultCredentials("accessKeyId", "", "securityToken");
-                signer = new OssRequestSigner("");
-                signer.Sign(request, credentials);
-                Assert.IsTrue(false);
-            }
-            catch (ArgumentException e)
-            {
-                Assert.IsTrue(true, e.Message);
-            }
-            catch (Exception e)
-            {
-                Assert.IsTrue(false, e.Message);
-            }
+            Assert.AreEqual(OssUtils.IsObjectKeyValid("", false), false);
+            Assert.AreEqual(OssUtils.IsObjectKeyValid("?", false), true);
+            Assert.AreEqual(OssUtils.IsObjectKeyValid("?123", false), true);
         }
 
         [Test]
